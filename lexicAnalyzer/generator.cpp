@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <utility>
 #include <vector>
 using namespace std;
 
@@ -58,74 +59,105 @@ bool is_operator(string exp, int i) {
         br++;
         --i;
     }
-    return br % 2;
+    return br % 2 == 0;
 }
 
 pair<int, int> convert_to_states(string exp, Automaton &A) {
+    vector<string> v;
+    int n_braces = 0;
+    int lc = 0; // zadnji zapisani znak |
+    for (int i = 0; i < exp.size(); i++) {
+        if (exp[i] == '(' && is_operator(exp, i))
+            n_braces++;
+        else if (exp[i] == ')' && is_operator(exp, i))
+            --n_braces;
+        else if (exp[i] == '|' && n_braces == 0 && is_operator(exp, i)) {
+            string exp2 = exp.substr(lc, i - lc);
+            lc = i + 1;
+            cout << "TEST: " << exp2 << endl;
+            v.push_back(exp2);
+        }
+    }
+    if (!v.empty())
+        v.push_back(exp.substr(lc, exp.size() - lc));
+    for (int i = 0; i < v.size(); i++) {
+        cout << v[i] << " ";
+    }
+    cout << endl;
+    // return make_pair(0, 0);
     int left_state = A.add_state();
     int right_state = A.add_state();
-    bool prefix = false;
-    int a, b;
-    int last_state = left_state;
-    for (int i = 0; i < exp.size(); i++) {
-        if (prefix == true) {
-            prefix = false;
-            char tz; // prijelazni znak
-            if (exp[i] == 't') {
-                tz = '\t';
-            } else if (exp[i] == 'n') {
-                tz = '\n';
-            } else if (exp[i] == ' ') {
-                tz = ' ';
-            } else {
-                tz = exp[i];
-            }
-            a = A.add_state();
-            b = A.add_state();
-            A.add_transition(a, b, tz);
-        } else {
-            if (exp[i] == '\\') {
-                prefix = true;
-                continue;
-            }
-            if (exp[i] != '(') {
+    if (!v.empty()) {
+        for (int i = 0; i < v.size(); i++) {
+            pair<int, int> p = convert_to_states(v[i], A);
+            A.add_transition(left_state, p.first, '$');
+            A.add_transition(p.second, right_state, '$');
+        }
+    } else {
+        bool prefix = false;
+        int a, b;
+        int last_state = left_state;
+        for (int i = 0; i < exp.size(); i++) {
+            if (prefix == true) {
+                prefix = false;
+                char tz; // prijelazni znak
+                if (exp[i] == 't') {
+                    tz = '\t';
+                } else if (exp[i] == 'n') {
+                    tz = '\n';
+                } else if (exp[i] == ' ') {
+                    tz = ' ';
+                } else {
+                    tz = exp[i];
+                }
                 a = A.add_state();
                 b = A.add_state();
-                if (exp[i] == '$') {
-                    A.add_transition(a, b,
-                                     '$'); // ovo se koristi za epislon prijelaz
-                } else {
-                    A.add_transition(a, b, exp[i]);
-                }
+                A.add_transition(a, b, tz);
             } else {
-                int j = i;
-                while (exp[j] != ')') {
-                    // cout << "bla " << j << " " << exp[j] << endl;
-                    j++;
+                if (exp[i] == '\\') {
+                    prefix = true;
+                    continue;
                 }
-                string exp2 = exp.substr(i + 1, j - i - 1);
-                pair<int, int> p = convert_to_states(exp2, A);
-                cout << exp2 << " " << j << endl;
-                a = p.first;
-                b = p.second;
-                i = j;
+                if (exp[i] != '(') {
+                    a = A.add_state();
+                    b = A.add_state();
+                    if (exp[i] == '$') {
+                        A.add_transition(
+                            a, b,
+                            '$'); // ovo se koristi za epislon prijelaz
+                    } else {
+                        A.add_transition(a, b, exp[i]);
+                    }
+                } else {
+                    int j = i;
+                    while (exp[j] != ')') {
+                        // cout << "bla " << j << " " << exp[j] << endl;
+                        j++;
+                    }
+                    string exp2 = exp.substr(i + 1, j - i - 1);
+                    pair<int, int> p = convert_to_states(exp2, A);
+                    cout << exp2 << " " << j << endl;
+                    a = p.first;
+                    b = p.second;
+                    i = j;
+                }
             }
+            if (i + 1 < exp.size() && exp[i + 1] == '*') {
+                int x = a;
+                int y = b;
+                a = A.add_state();
+                b = A.add_state();
+                A.add_transition(a, x, '$');
+                A.add_transition(y, b, '$');
+                A.add_transition(a, b, '$');
+                A.add_transition(y, x, '$');
+                i = i + 1;
+            }
+            A.add_transition(last_state, a, '$');
+            last_state = b;
         }
-        if (i + 1 < exp.size() && exp[i + 1] == '*') {
-            int x = a;
-            int y = b;
-            a = A.add_state();
-            b = A.add_state();
-            A.add_transition(a, x, '$');
-            A.add_transition(y, b, '$');
-            A.add_transition(a, b, '$');
-            A.add_transition(y, x, '$');
-            i = i + 1;
-        }
-        A.add_transition(last_state, a, '$');
-        last_state = b;
+        A.add_transition(last_state, right_state, '$');
     }
-    A.add_transition(last_state, right_state, '$');
     return make_pair(left_state, right_state);
 }
 
