@@ -15,9 +15,10 @@ struct transition {
 class Automaton {
     vector<transition> tr; // prijelazi
     vector<int> states;
+    int start, acc;
 
   public:
-    Automaton() : tr(), states() {}
+    Automaton() : tr(), states(), start(0), acc(0) {}
     int add_state() {
         if (!states.empty()) {
             states.push_back(states.size());
@@ -28,10 +29,12 @@ class Automaton {
         }
     }
     void print_states() {
+        cout << "-------States-------" << endl;
+        cout << "Start: " << start << " Acc: " << acc << endl;
         for (int i = 0; i < states.size(); i++) {
             cout << states[i] << " ";
         }
-        cout << endl;
+        cout << "--------------------" << endl;
         return;
     }
     void add_transition(int s1, int s2, char z) {
@@ -39,10 +42,14 @@ class Automaton {
         tr.push_back(t);
     }
     void print_tr() {
+        cout << "----Transitions------" << endl;
         for (int i = 0; i < tr.size(); i++) {
             cout << tr[i].s1 << " " << tr[i].s2 << " " << tr[i].z << endl;
         }
+        cout << "---------------------" << endl;
     }
+    void add_start(int s) { start = s; }
+    void add_acc(int s) { acc = s; }
 };
 
 bool is_operator(string exp, int i) {
@@ -55,8 +62,11 @@ bool is_operator(string exp, int i) {
 }
 
 pair<int, int> convert_to_states(string exp, Automaton &A) {
+    int left_state = A.add_state();
+    int right_state = A.add_state();
     bool prefix = false;
     int a, b;
+    int last_state = left_state;
     for (int i = 0; i < exp.size(); i++) {
         if (prefix == true) {
             prefix = false;
@@ -84,8 +94,9 @@ pair<int, int> convert_to_states(string exp, Automaton &A) {
                 if (exp[i] == '$') {
                     A.add_transition(a, b,
                                      '$'); // ovo se koristi za epislon prijelaz
+                } else {
+                    A.add_transition(a, b, exp[i]);
                 }
-                A.add_transition(a, b, exp[i]);
             } else {
                 int j = i;
                 while (exp[j] != ')') {
@@ -100,8 +111,22 @@ pair<int, int> convert_to_states(string exp, Automaton &A) {
                 i = j;
             }
         }
+        if (i + 1 < exp.size() && exp[i + 1] == '*') {
+            int x = a;
+            int y = b;
+            a = A.add_state();
+            b = A.add_state();
+            A.add_transition(a, x, '$');
+            A.add_transition(y, b, '$');
+            A.add_transition(a, b, '$');
+            A.add_transition(y, x, '$');
+            i = i + 1;
+        }
+        A.add_transition(last_state, a, '$');
+        last_state = b;
     }
-    return make_pair(a, b);
+    A.add_transition(last_state, right_state, '$');
+    return make_pair(left_state, right_state);
 }
 
 int main() {
@@ -109,7 +134,9 @@ int main() {
     getline(cin, exp);
     cout << exp << endl;
     Automaton A;
-    convert_to_states(exp, A);
+    pair<int, int> p = convert_to_states(exp, A);
+    A.add_start(p.first);
+    A.add_acc(p.second);
     A.print_states();
     A.print_tr();
     return 0;
