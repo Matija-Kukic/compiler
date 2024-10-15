@@ -1,6 +1,6 @@
 #include <iostream>
+#include <map>
 #include <string>
-#include <utility>
 #include <vector>
 using namespace std;
 
@@ -74,16 +74,11 @@ pair<int, int> convert_to_states(string exp, Automaton &A) {
         else if (exp[i] == '|' && n_braces == 0 && is_operator(exp, i)) {
             string exp2 = exp.substr(lc, i - lc);
             lc = i + 1;
-            cout << "TEST: " << exp2 << endl;
             v.push_back(exp2);
         }
     }
     if (!v.empty())
         v.push_back(exp.substr(lc, exp.size() - lc));
-    for (int i = 0; i < v.size(); i++) {
-        cout << v[i] << " ";
-    }
-    cout << endl;
     // return make_pair(0, 0);
     int left_state = A.add_state();
     int right_state = A.add_state();
@@ -131,12 +126,10 @@ pair<int, int> convert_to_states(string exp, Automaton &A) {
                 } else {
                     int j = i;
                     while (exp[j] != ')') {
-                        // cout << "bla " << j << " " << exp[j] << endl;
                         j++;
                     }
                     string exp2 = exp.substr(i + 1, j - i - 1);
                     pair<int, int> p = convert_to_states(exp2, A);
-                    cout << exp2 << " " << j << endl;
                     a = p.first;
                     b = p.second;
                     i = j;
@@ -162,9 +155,17 @@ pair<int, int> convert_to_states(string exp, Automaton &A) {
 }
 
 int main() {
-    string exp; // expresin/izraz
-    getline(cin, exp);
-    cout << exp << endl;
+    map<string, string> regex;
+    vector<string> input;
+    string exp, line; // expresin/izraz
+    while (getline(cin, line)) {
+        input.push_back(line);
+    }
+    exp = input[0];
+    cout << "INPUT" << endl;
+    for (int i = 0; i < input.size(); i++) {
+        cout << input[i] << endl;
+    }
     Automaton A;
     pair<int, int> p = convert_to_states(exp, A);
     A.add_start(p.first);
