@@ -12,6 +12,7 @@ class Automaton {
   public:
     string letter;
     string start, acc;
+    map<string, vector<string>> actions;
     Automaton() : tr(), last(0), letter("a"), start("qs"), acc("qa") {}
     int add_state() {
         int t = last;
@@ -87,7 +88,7 @@ pair<int, int> convert_to_states(string exp, Automaton &A) {
                     tz = '\t';
                 } else if (exp[i] == 'n') {
                     tz = '\n';
-                } else if (exp[i] == ' ') {
+                } else if (exp[i] == '_') {
                     tz = ' ';
                 } else {
                     tz = exp[i];
@@ -111,11 +112,17 @@ pair<int, int> convert_to_states(string exp, Automaton &A) {
                         A.add_transition(a, b, exp[i]);
                     }
                 } else {
-                    int j = i;
-                    while (exp[j] != ')') {
+                    int j = i + 1;
+                    int cnt = 0;
+                    while (!(exp[j] == ')' && cnt == 0)) {
+                        if (exp[j] == '(' && is_operator(exp, j))
+                            cnt++;
+                        if (exp[j] == ')' && is_operator(exp, j))
+                            --cnt;
                         j++;
                     }
                     string exp2 = exp.substr(i + 1, j - i - 1);
+                    cout << "DEBUG" << exp2 << " " << i << " " << j << endl;
                     pair<int, int> p = convert_to_states(exp2, A);
                     a = p.first;
                     b = p.second;
@@ -144,27 +151,139 @@ pair<int, int> convert_to_states(string exp, Automaton &A) {
 int main() {
     map<string, string> regex;
     vector<string> input;
-    string exp, line; // expresin/izraz
-    while (getline(cin, line)) {
-        input.push_back(line);
+    map<string, Automaton> aA;
+    string exp, lines = ""; // expresin/izraz
+    int N = 0;
+    while (getline(cin, lines))
+        input.push_back(lines);
+    for (int j = 0; input[j][0] == '{'; j++) {
+        string line = input[j];
+        string regname = "", reg = "", hreg = "";
+        int z = 0, z2 = 0;
+        char c1 = '{', c2 = '}';
+        for (int i = 0; i < line.size(); i++) {
+            if (line[i] == ' ') {
+                z++;
+                continue;
+            }
+            if (z == 0) {
+                regname += line[i];
+            } else {
+                if (line[i] == c1 && is_operator(line, i)) {
+                    z2++;
+                }
+                if (line[i] == c2 && is_operator(line, i)) {
+                    hreg += c2;
+                    reg += "(" + regex[hreg] + ")";
+                    hreg = "";
+                    --z2;
+                    continue;
+                }
+                if (!z2)
+                    reg += line[i];
+                else
+                    hreg += line[i];
+            }
+        }
+        regex[regname] = reg;
+        N++;
     }
-    exp = input[0];
-    cout << "INPUT" << endl;
-    for (int i = 0; i < input.size(); i++) {
-        cout << input[i] << endl;
+    cout << "----regexs------" << endl;
+    for (const auto &entry : regex) {
+        const auto &key = entry.first;
+        string value = entry.second;
+        cout << key << " : " << value << endl;
     }
+    cout << "---------------------" << endl;
+    cout << input[N] << endl << input[N + 1] << endl;
+    string states = input[N].substr(3, input[N].size() - 2);
+    string help = "";
+    for (int i = 0; i < states.size(); i++) {
+        if (states[i] != ' ') {
+            help += states[i];
+        } else {
+            aA[help] = Automaton();
+            cout << aA[help].letter << endl;
+            help = "";
+        }
+    }
+    Automaton a = Automaton();
+    aA[help] = a;
+    N += 2;
+
+    int z = 0, fs = 1;
+    for (int i = N; i < input.size(); i++) {
+
+        string current_state = "", exp = "", new_state = "", lex_unit = "";
+        vector<string> actions;
+        for (int j = 0; j < input[i].size(); j++) {
+            if (input[i][j] == '<' && fs) {
+                z++;
+                continue;
+            }
+            if (input[i][j] == '>' && fs) {
+                fs = 0;
+                z = 0;
+                continue;
+            }
+            if (z == 1) {
+                current_state += input[i][j];
+            } else {
+                if (input[i][j] == '{' && is_operator(input[i], j)) {
+                    int c = j + 1;
+                    while (input[i][c] != '}') {
+                        c++;
+                    }
+                    string helpe = input[i].substr(j, c - j + 1);
+                    exp += "(" + regex[helpe] + ")";
+                    if (c + 1 < input[i].size())
+                        j = c + 1;
+                    else
+                        break;
+                } else {
+                    exp += input[i][j];
+                }
+            }
+        }
+
+        fs = 1;
+        i += 2;
+        if (input[i][0] != '-') {
+            lex_unit = input[i];
+        }
+        i++;
+        while (input[i][0] != '}') {
+            actions.push_back(input[i]);
+            i++;
+        }
+        pair<int, int> p = convert_to_states(exp, aA[current_state]);
+        string left = aA[current_state].letter + to_string(p.first);
+        string right = aA[current_state].letter + to_string(p.second);
+        aA[current_state].add_transition2("qs", left, '$');
+        aA[current_state].add_transition2(right, "qa", '$');
+        string lett = aA[current_state].letter;
+        if (!actions.empty()) {
+            for (int c = 0; c < actions.size(); c++) {
+                aA[current_state].actions[lett].push_back(actions[c]);
+            }
+        }
+        aA[current_state].res_last();
+        aA[current_state].add_letter();
+        // aA[current_state].print_tr();
+    }
+    for (const auto &entry : aA) {
+        const auto &key = entry.first;
+        cout << "Automaton: " << key << " " << &aA[key] << endl;
+        map<string, vector<string>> m = aA[key].actions;
+        // aA[key].print_tr();
+        for (const auto &e2 : m) {
+            const auto &k2 = e2.first;
+            cout << k2 << " " << m[k2][0] << endl;
+        }
+    }
+
     Automaton A;
-    for (int i = 0; i < input.size(); i++) {
-        pair<int, int> p = convert_to_states(input[i], A);
-        pair<string, string> p2 = make_pair(A.letter + to_string(p.first),
-                                            A.letter + to_string(p.second));
-        cout << p2.first << " " << p2.second << " " << A.start << " " << A.acc
-             << endl;
-        A.add_transition2(A.start, p2.first, '$');
-        A.add_transition2(p2.second, A.acc, '$');
-        A.add_letter();
-        A.res_last();
-    }
+    pair<int, int> p = convert_to_states("a((a|b|c)|ab*)", A);
     A.print_tr();
     return 0;
 }
