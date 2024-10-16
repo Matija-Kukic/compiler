@@ -1,56 +1,43 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 using namespace std;
 
-struct transition {
-    // s1 - pocetno stanje, s2 - stanje u koje prijelazimo
-    // z - znak prijelaza
-    int s1;
-    int s2;
-    char z;
-    transition(int s1, int s2, int z) : s1(s1), s2(s2), z(z) {}
-};
-
 class Automaton {
-    vector<transition> tr; // prijelazi
-    vector<int> states;
-    int start, acc;
+    multimap<pair<string, char>, string> tr; // prijelazi
+    int last;
 
   public:
-    Automaton() : tr(), states(), start(0), acc(0) {}
+    string letter;
+    string start, acc;
+    Automaton() : tr(), last(0), letter("a"), start("qs"), acc("qa") {}
     int add_state() {
-        if (!states.empty()) {
-            states.push_back(states.size());
-            return states.size() - 1;
-        } else {
-            states.push_back(0);
-            return 0;
-        }
-    }
-    void print_states() {
-        cout << "-------States-------" << endl;
-        cout << "Start: " << start << " Acc: " << acc << endl;
-        for (int i = 0; i < states.size(); i++) {
-            cout << states[i] << " ";
-        }
-        cout << "--------------------" << endl;
-        return;
+        int t = last;
+        last++;
+        return t;
     }
     void add_transition(int s1, int s2, char z) {
-        transition t(s1, s2, z);
-        tr.push_back(t);
+        string st1 = letter + to_string(s1);
+        string st2 = letter + to_string(s2);
+        tr.insert({{st1, z}, st2});
+    }
+    void add_transition2(string s1, string s2, char z) {
+        tr.insert({{s1, z}, s2});
     }
     void print_tr() {
         cout << "----Transitions------" << endl;
-        for (int i = 0; i < tr.size(); i++) {
-            cout << tr[i].s1 << " " << tr[i].s2 << " " << tr[i].z << endl;
+        for (const auto &entry : tr) {
+            const auto &key = entry.first;
+            string value = entry.second;
+            cout << "(" << key.first << ", " << key.second << ") : " << value
+                 << endl;
         }
         cout << "---------------------" << endl;
     }
-    void add_start(int s) { start = s; }
-    void add_acc(int s) { acc = s; }
+    void add_letter() { letter[letter.size() - 1] += 1; }
+    void res_last() { last = 0; }
 };
 
 bool is_operator(string exp, int i) {
@@ -167,10 +154,17 @@ int main() {
         cout << input[i] << endl;
     }
     Automaton A;
-    pair<int, int> p = convert_to_states(exp, A);
-    A.add_start(p.first);
-    A.add_acc(p.second);
-    A.print_states();
+    for (int i = 0; i < input.size(); i++) {
+        pair<int, int> p = convert_to_states(input[i], A);
+        pair<string, string> p2 = make_pair(A.letter + to_string(p.first),
+                                            A.letter + to_string(p.second));
+        cout << p2.first << " " << p2.second << " " << A.start << " " << A.acc
+             << endl;
+        A.add_transition2(A.start, p2.first, '$');
+        A.add_transition2(p2.second, A.acc, '$');
+        A.add_letter();
+        A.res_last();
+    }
     A.print_tr();
     return 0;
 }

@@ -1,3 +1,4 @@
-bla|(12)*
-bla2
-bla3
+ab
+(cd)*
+ef
+\(bl\)
