@@ -1,3 +1,4 @@
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <string>
@@ -12,7 +13,8 @@ class Automaton {
   public:
     string letter;
     string start, acc;
-    map<string, vector<string>> actions;
+    map<string, string> actions;
+    map<string, string> lex_unit;
     Automaton() : tr(), last(0), letter("a"), start("qs"), acc("qa") {}
     int add_state() {
         int t = last;
@@ -36,6 +38,15 @@ class Automaton {
                  << endl;
         }
         cout << "---------------------" << endl;
+    }
+    string ret_tr() {
+        string ret = "";
+        for (const auto &entry : tr) {
+            const auto &key = entry.first;
+            string value = entry.second;
+            ret += key.first + " " + key.second + " " + value + "\n";
+        }
+        return ret;
     }
     void add_letter() { letter[letter.size() - 1] += 1; }
     void res_last() { last = 0; }
@@ -122,7 +133,6 @@ pair<int, int> convert_to_states(string exp, Automaton &A) {
                         j++;
                     }
                     string exp2 = exp.substr(i + 1, j - i - 1);
-                    cout << "DEBUG" << exp2 << " " << i << " " << j << endl;
                     pair<int, int> p = convert_to_states(exp2, A);
                     a = p.first;
                     b = p.second;
@@ -151,7 +161,8 @@ pair<int, int> convert_to_states(string exp, Automaton &A) {
 int main() {
     map<string, string> regex;
     vector<string> input;
-    map<string, Automaton> aA;
+    map<string, Automaton>
+        aA; // all automants, i use one for each state of analyzer
     string exp, lines = ""; // expresin/izraz
     int N = 0;
     while (getline(cin, lines))
@@ -188,14 +199,6 @@ int main() {
         regex[regname] = reg;
         N++;
     }
-    cout << "----regexs------" << endl;
-    for (const auto &entry : regex) {
-        const auto &key = entry.first;
-        string value = entry.second;
-        cout << key << " : " << value << endl;
-    }
-    cout << "---------------------" << endl;
-    cout << input[N] << endl << input[N + 1] << endl;
     string states = input[N].substr(3, input[N].size() - 2);
     string help = "";
     for (int i = 0; i < states.size(); i++) {
@@ -203,7 +206,6 @@ int main() {
             help += states[i];
         } else {
             aA[help] = Automaton();
-            cout << aA[help].letter << endl;
             help = "";
         }
     }
@@ -264,26 +266,40 @@ int main() {
         string lett = aA[current_state].letter;
         if (!actions.empty()) {
             for (int c = 0; c < actions.size(); c++) {
-                aA[current_state].actions[lett].push_back(actions[c]);
+                aA[current_state].actions[lett] += actions[c] + " ";
             }
+        }
+        if (lex_unit != "") {
+            aA[current_state].lex_unit[aA[current_state].letter] = lex_unit;
         }
         aA[current_state].res_last();
         aA[current_state].add_letter();
         // aA[current_state].print_tr();
     }
-    for (const auto &entry : aA) {
-        const auto &key = entry.first;
-        cout << "Automaton: " << key << " " << &aA[key] << endl;
-        map<string, vector<string>> m = aA[key].actions;
-        // aA[key].print_tr();
-        for (const auto &e2 : m) {
-            const auto &k2 = e2.first;
-            cout << k2 << " " << m[k2][0] << endl;
-        }
-    }
-
+    /*
     Automaton A;
     pair<int, int> p = convert_to_states("a((a|b|c)|ab*)", A);
-    A.print_tr();
+    A.print_tr();*/
+    // printing to file
+    ofstream file("analizator/automat.txt");
+
+    for (const auto &e : aA) {
+        const auto &key = e.first;
+        file << key + "\n";
+        file << "Transitions\n";
+        file << aA[key].ret_tr();
+        file << "Units\n";
+        for (const auto &e2 : aA[key].lex_unit) {
+            const auto &k2 = e2.first;
+            file << k2 << " " << aA[key].lex_unit[k2] << "\n";
+        }
+        file << "Actions\n";
+        for (const auto &e3 : aA[key].actions) {
+            const auto &key = e3.first;
+            const auto value = e3.second;
+            file << key << " " << value << "\n";
+        }
+    }
+    file.close(); // Always close the file
     return 0;
 }
