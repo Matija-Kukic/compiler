@@ -59,7 +59,15 @@ class Automaton {
         }
         return ret;
     }
-    void add_letter() { letter[letter.size() - 1] += 1; }
+    void add_letter() {
+        int N = letter.size() - 1;
+        if (letter[N] == 'z') {
+            letter[N] = '~';
+            letter += "`";
+            N++;
+        }
+        letter[N] += 1;
+    }
     void res_last() { last = 0; }
 };
 

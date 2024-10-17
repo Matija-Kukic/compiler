@@ -8,14 +8,15 @@ using namespace std;
 
 struct Automaton {
     map<string, string> lex_unit;
-    map<string, pair<string, string>> actions;
+    multimap<string, pair<string, string>> actions;
     map<pair<string, char>, string> tr;
     string start, acc;
 
     Automaton();
-    void add_transition(string s1, char, string s2);
+    void add_transition(string s1, char z, string s2);
     void add_action(string name, pair<string, string> action);
     void add_units(string s1, string s2);
+    void print_tr();
 };
 
 #endif // AUTOMATON_H
