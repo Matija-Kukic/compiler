@@ -44,7 +44,18 @@ class Automaton {
         for (const auto &entry : tr) {
             const auto &key = entry.first;
             string value = entry.second;
-            ret += key.first + " " + key.second + " " + value + "\n";
+            string z = "";
+            z += key.second;
+            if (key.second == '\t') {
+                z = "|t";
+            }
+            if (key.second == '\n') {
+                z = "|n";
+            }
+            if (key.second == ' ') {
+                z = "|_";
+            }
+            ret += key.first + " " + z + " " + value + "\n";
         }
         return ret;
     }
@@ -285,6 +296,7 @@ int main() {
 
     for (const auto &e : aA) {
         const auto &key = e.first;
+        file << "State\n";
         file << key + "\n";
         file << "Transitions\n";
         file << aA[key].ret_tr();
@@ -292,6 +304,9 @@ int main() {
         for (const auto &e2 : aA[key].lex_unit) {
             const auto &k2 = e2.first;
             file << k2 << " " << aA[key].lex_unit[k2] << "\n";
+        }
+        if (aA[key].lex_unit.empty()) {
+            file << "---\n";
         }
         file << "Actions\n";
         for (const auto &e3 : aA[key].actions) {

@@ -1,3 +1,4 @@
+State
 S_komentar
 Transitions
 a0 $ a2
@@ -8,8 +9,7 @@ a4 # a5
 a5 $ a1
 b0 $ b2
 b1 $ qa
-b2 
- b3
+b2 |n b3
 b3 $ b1
 c0 $ c2
 c1 $ qa
@@ -302,7 +302,7 @@ c356 s c357
 c357 $ c358
 c358 | c359
 c359 $ c360
-c36 	 c37
+c36 |t c37
 c360 t c361
 c361 $ c362
 c362 | c363
@@ -339,12 +339,11 @@ c39 $ c40
 c390 ) c391
 c391 $ c1
 c4 $ c6
-c40 
- c41
+c40 |n c41
 c41 $ c42
 c42 | c43
 c43 $ c44
-c44   c45
+c44 |_ c45
 c45 $ c46
 c46 | c47
 c47 $ c48
@@ -409,9 +408,11 @@ qs $ a0
 qs $ b0
 qs $ c0
 Units
+---
 Actions
 a UDJI_U_STANJE S_pocetno 
 b NOVI_REDAK 
+State
 S_pocetno
 Transitions
 a0 $ a2
@@ -419,16 +420,15 @@ a0 $ a6
 a1 $ qa
 a2 $ a4
 a3 $ a1
-a4 	 a5
+a4 |t a5
 a5 $ a3
 a6 $ a8
 a7 $ a1
-a8   a9
+a8 |_ a9
 a9 $ a7
 b0 $ b2
 b1 $ qa
-b2 
- b3
+b2 |n b3
 b3 $ b1
 c0 $ c2
 c1 $ qa
@@ -805,12 +805,11 @@ h0 $ h2
 h1 $ qa
 h10 $ h12
 h11 $ h5
-h12 
- h13
+h12 |n h13
 h13 $ h11
 h14 $ h16
 h15 $ h5
-h16   h17
+h16 |_ h17
 h17 $ h15
 h18 - h19
 h19 $ h1
@@ -822,18 +821,17 @@ h4 $ h14
 h5 $ h18
 h6 $ h8
 h7 $ h5
-h8 	 h9
+h8 |t h9
 h9 $ h7
 i0 $ i2
 i1 $ qa
 i10 $ i12
 i11 $ i5
-i12 
- i13
+i12 |n i13
 i13 $ i11
 i14 $ i16
 i15 $ i5
-i16   i17
+i16 |_ i17
 i17 $ i15
 i18 - i19
 i19 $ i1
@@ -845,7 +843,7 @@ i4 $ i14
 i5 $ i18
 i6 $ i8
 i7 $ i5
-i8 	 i9
+i8 |t i9
 i9 $ i7
 qs $ a0
 qs $ b0
@@ -868,6 +866,7 @@ b NOVI_REDAK
 c UDJI_U_STANJE S_komentar 
 h UDJI_U_STANJE S_unarni VRATI_SE 1 
 i UDJI_U_STANJE S_unarni VRATI_SE 1 
+State
 S_unarni
 Transitions
 a0 $ a2
@@ -875,16 +874,15 @@ a0 $ a6
 a1 $ qa
 a2 $ a4
 a3 $ a1
-a4 	 a5
+a4 |t a5
 a5 $ a3
 a6 $ a8
 a7 $ a1
-a8   a9
+a8 |_ a9
 a9 $ a7
 b0 $ b2
 b1 $ qa
-b2 
- b3
+b2 |n b3
 b3 $ b1
 c0 $ c2
 c1 $ qa
@@ -894,12 +892,11 @@ d0 $ d2
 d1 $ qa
 d10 $ d12
 d11 $ d5
-d12 
- d13
+d12 |n d13
 d13 $ d11
 d14 $ d16
 d15 $ d5
-d16   d17
+d16 |_ d17
 d17 $ d15
 d18 - d19
 d19 $ d1
@@ -911,7 +908,7 @@ d4 $ d14
 d5 $ d18
 d6 $ d8
 d7 $ d5
-d8 	 d9
+d8 |t d9
 d9 $ d7
 qs $ a0
 qs $ b0
