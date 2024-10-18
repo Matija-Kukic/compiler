@@ -3,9 +3,29 @@
 #include <iostream>
 #include <iterator>
 #include <map>
+#include <set>
+#include <stack>
 #include <string>
 #include <utility>
 using namespace std;
+
+void epsilon_transitions(set<string> &R, set<string> &Q, stack<string> &s,
+                         Automaton &A) {
+    while (!s.empty()) {
+        string st = s.top();
+        auto range = A.tr.equal_range(make_pair(st, '$'));
+        for (auto it = range.first; it != range.second; ++it) {
+            string bb = it->second;
+            cerr << bb << endl;
+            if (Q.count(bb) == 0) {
+                Q.insert(bb);
+                s.push(bb);
+            }
+        }
+        s.pop();
+    }
+    swap(R, Q);
+}
 
 int main() {
     /*Automaton a;
@@ -18,6 +38,7 @@ int main() {
         m; // main map with automaton for each state of analyzer
     char c = ' ';
     string state = "";
+    string first_state = "";
     while (getline(file, line)) {
         if (line == "State") {
             c = 's';
@@ -128,8 +149,30 @@ int main() {
     }
 
     file.close();
-    string content((istreambuf_iterator<char>(cin)),
+    /*string content((istreambuf_iterator<char>(cin)),
                    istreambuf_iterator<char>());
-    cout << content;
+    cout << content;*/
+    int Start = 0, End = 0, Last = 0;
+    string Exp = "";
+    int row_cnt = 0;
+    set<string> R, Q;
+    stack<string> s;
+    Q.insert("qs");
+    s.push("qs");
+    Automaton &A = m["S_pocetno"];
+    epsilon_transitions(R, Q, s, A);
+    R.erase("qs");
+    char curr = '\0';
+    /*while (End < content.size()) {
+        if (!R.empty() && R.count("qa") == 0) {
+            curr = content[End];
+            End += 1;
+        }
+    }*/
+    for (const auto &ent : R) {
+        cerr << ent << " ";
+    }
+    cerr << endl;
+    // A.print_tr();
     return 0;
 }

@@ -9,7 +9,7 @@ using namespace std;
 struct Automaton {
     map<string, string> lex_unit;
     multimap<string, pair<string, string>> actions;
-    map<pair<string, char>, string> tr;
+    multimap<pair<string, char>, string> tr;
     string start, acc;
 
     Automaton();
