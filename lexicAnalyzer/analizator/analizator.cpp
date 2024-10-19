@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iterator>
 #include <map>
+#include <ostream>
 #include <set>
 #include <stack>
 #include <string>
@@ -10,19 +11,29 @@
 using namespace std;
 
 void epsilon_transitions(set<string> &R, set<string> &Q, stack<string> &s,
-                         Automaton &A) {
+                         Automaton &A, set<string> &acc) {
     while (!s.empty()) {
         string st = s.top();
         auto range = A.tr.equal_range(make_pair(st, '$'));
+        s.pop();
         for (auto it = range.first; it != range.second; ++it) {
             string bb = it->second;
-            cerr << bb << endl;
+            // cerr << st << " " << bb << endl;
             if (Q.count(bb) == 0) {
                 Q.insert(bb);
                 s.push(bb);
             }
+            if (bb == "qa") {
+                string ss = "";
+                int i = 0;
+                while (!(st[i] >= '0' && st[i] <= '9')) {
+                    ss += st[i];
+                    i++;
+                }
+                acc.insert(ss);
+                // cerr << "BLAAA " << ss << endl;
+            }
         }
-        s.pop();
     }
     swap(R, Q);
 }
@@ -102,15 +113,15 @@ int main() {
             for (i = 0; line[i] != ' '; i++) {
                 letter += line[i];
             }
-            cerr << i << " " << letter << endl;
             i++;
             if (i >= line.size())
                 continue;
             for (; i < line.size(); i++) {
                 if (line[i] == ' ') {
-                    if (name == "NOVI_RED") {
+                    if (name == "NOVI_REDAK") {
                         m[state].add_action(letter, make_pair(name, parametar));
                         name = "";
+                        parametar = "";
                         continue;
                     }
                     t++;
@@ -122,7 +133,7 @@ int main() {
                     parametar += line[i];
                 } else {
                     m[state].add_action(letter, make_pair(name, parametar));
-                    name = "";
+                    name = line[i];
                     parametar = "";
                     t = 0;
                 }
@@ -134,7 +145,7 @@ int main() {
         // cerr << line << endl;
     }
 
-    for (const auto &e : m) {
+    /*for (const auto &e : m) {
         const auto &bla = e.first;
         cerr << "STATE: " << bla << endl;
         // m[bla].print_tr();
@@ -146,33 +157,148 @@ int main() {
             cerr << bla2 << " " << e3.second.first << " " << e3.second.second
                  << endl;
         }
-    }
+    }*/
 
     file.close();
-    /*string content((istreambuf_iterator<char>(cin)),
+    string content((istreambuf_iterator<char>(cin)),
                    istreambuf_iterator<char>());
-    cout << content;*/
-    int Start = 0, End = 0, Last = 0;
+    int Start = -1, End = 0, Last = -1;
     string Exp = "";
     int row_cnt = 0;
-    set<string> R, Q;
+    string las = "S_pocetno";
+    set<string> R, Q, acc;
     stack<string> s;
     Q.insert("qs");
     s.push("qs");
-    Automaton &A = m["S_pocetno"];
-    epsilon_transitions(R, Q, s, A);
+    epsilon_transitions(R, Q, s, m[las], acc);
     R.erase("qs");
     char curr = '\0';
-    /*while (End < content.size()) {
-        if (!R.empty() && R.count("qa") == 0) {
-            curr = content[End];
-            End += 1;
-        }
-    }*/
     for (const auto &ent : R) {
         cerr << ent << " ";
     }
-    cerr << endl;
+    ofstream f2("izlaz.txt");
+    content += "/0";
+    while (End < content.size()) {
+        if (!R.empty() && R.count("qa") == 0) {
+            cout << "STANJA(0): " << Start << " " << End << " " << Last << " "
+                 << curr << " " << Exp << " " << las << " " << R.size() << endl;
+            curr = content[End];
+            End += 1;
+            // cerr << "TEST0: " << End << " " << curr << " " << R.size() <<
+            // endl;
+            for (const auto &e : R) {
+                string st = e;
+                auto range = m[las].tr.equal_range({e, curr});
+                for (auto it = range.first; it != range.second; ++it) {
+                    Q.insert(it->second);
+                    s.push(it->second);
+                }
+            }
+            R.clear();
+            epsilon_transitions(R, Q, s, m[las], acc);
+            cout << "R: " << endl;
+            for (const auto &e : R) {
+                cout << e << " ";
+            }
+            cout << endl;
+
+            // cerr << "TEST: " << Q.size() << " " << s.size() << " " <<
+            // R.size()
+            //     << endl;
+        } else if (!R.empty() && R.count("qa") != 0) {
+            cout << "STANJA(1): " << Start << " " << End << " " << Last << " "
+                 << curr << " " << Exp << " " << las << " " << R.size() << endl;
+
+            auto it = acc.begin();
+            Exp = *it;
+            for (auto it = acc.begin(); it != acc.end(); ++it) {
+                string s = *it;
+                if (m[las].lex_unit.count(s) == 0) {
+                    auto range = m[las].actions.equal_range(s);
+                    for (auto it = range.first; it != range.second; ++it) {
+                        auto const &key = it->first;
+                        string act = it->second.first;
+                        string param = it->second.second;
+                        if (act == "UDJI_U_STANJE") {
+                            cerr << "USAO" << endl;
+                            las = param;
+                        }
+                    }
+                }
+            }
+            acc.clear();
+            Last = End - 1;
+            curr = content[End];
+            End = End + 1;
+            for (const auto &e : R) {
+                string st = e;
+                auto range = m[las].tr.equal_range({e, curr});
+                for (auto it = range.first; it != range.second; ++it) {
+                    Q.insert(it->second);
+                    s.push(it->second);
+                }
+            }
+            R.clear();
+            epsilon_transitions(R, Q, s, m[las], acc);
+            cout << "R: " << endl;
+            for (const auto &e : R) {
+                cout << e << " ";
+            }
+            cout << endl;
+
+        } else if (R.empty()) {
+            cout << "STANJA(2): " << Start << " " << End << " " << Last << " "
+                 << curr << " " << Exp << " " << las << " " << R.size() << " "
+                 << endl;
+
+            if (Exp == "") {
+                // cerr << "START: " << content[Start] << endl;
+                End = Start + 1;
+                Start = Start + 1;
+                Last = Start + 1;
+                R.clear();
+                Q.clear();
+                Q.insert("qs");
+                s.push("qs");
+                epsilon_transitions(R, Q, s, m[las], acc);
+
+            } else {
+                int z = 0;
+                string new_lex = m[las].lex_unit[Exp];
+                auto range = m[las].actions.equal_range(Exp);
+                for (auto it = range.first; it != range.second; ++it) {
+                    auto const &key = it->first;
+                    string act = it->second.first;
+                    string param = it->second.second;
+                    cout << "TESTiranje " << key << " " << act << " " << param
+                         << endl;
+                    if (act == "UDJI_U_STANJE") {
+                        cerr << "USAO" << endl;
+                        las = param;
+                    }
+                    if (act == "VRATI_SE") {
+                        int p = stoi(param);
+                        Last = Start + p - 1;
+                    }
+                }
+                if (!new_lex.empty()) {
+                    f2 << new_lex << endl;
+                    cerr << new_lex << endl;
+                }
+                Exp = "";
+                Start = Last + 1;
+                End = Last + 1;
+                R.clear();
+                Q.clear();
+                Q.insert("qs");
+                s.push("qs");
+                epsilon_transitions(R, Q, s, m[las], acc);
+                curr = '\0';
+            }
+        }
+    }
+
     // A.print_tr();
     return 0;
+    f2.close();
 }

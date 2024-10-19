@@ -257,10 +257,7 @@ int main() {
                     }
                     string helpe = input[i].substr(j, c - j + 1);
                     exp += "(" + regex[helpe] + ")";
-                    if (c + 1 < input[i].size())
-                        j = c + 1;
-                    else
-                        break;
+                    j = c;
                 } else {
                     exp += input[i][j];
                 }
@@ -277,6 +274,7 @@ int main() {
             actions.push_back(input[i]);
             i++;
         }
+        cout << exp << endl;
         pair<int, int> p = convert_to_states(exp, aA[current_state]);
         string left = aA[current_state].letter + to_string(p.first);
         string right = aA[current_state].letter + to_string(p.second);
@@ -324,5 +322,9 @@ int main() {
         }
     }
     file.close(); // Always close the file
+    Automaton A;
+    pair<int, int> p = convert_to_states("-(" + regex["{bjelina}"] + ")*-", A);
+    A.print_tr();
+    cout << regex["{bjelina}"] << endl;
     return 0;
 }
