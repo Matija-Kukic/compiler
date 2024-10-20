@@ -253,7 +253,5 @@ int main() {
             }
         }
     }
-
-    // A.print_tr();
     return 0;
 }

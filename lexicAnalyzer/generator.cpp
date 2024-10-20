@@ -316,9 +316,5 @@ int main() {
         }
     }
     file.close(); // Always close the file
-    Automaton A;
-    string exp3 = "";
-    exp3 += "'(" + regex["{sveOsimJednostrukogNavodnikaNovogRedaITaba}"] + ")'";
-    pair<int, int> p = convert_to_states(exp3, A);
     return 0;
 }
