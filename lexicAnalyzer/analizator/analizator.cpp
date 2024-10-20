@@ -44,6 +44,7 @@ int main() {
     char c = ' ';
     string state = "";
     string first_state = "";
+    getline(file, first_state);
     while (getline(file, line)) {
         if (line == "State") {
             c = 's';
@@ -142,11 +143,11 @@ int main() {
     file.close();
     string content((istreambuf_iterator<char>(cin)),
                    istreambuf_iterator<char>());
-    int Start = -1, End = 0, Last = -1;
+    int Start = 0, End = 0, Last = 0;
     string Exp = "";
     int row_cnt = 0;
     int no_line = 1, nl = 0;
-    string las = "S_pocetno";
+    string las = first_state;
     set<string> R, Q, acc;
     stack<string> s;
     Q.insert("qs");
@@ -154,7 +155,8 @@ int main() {
     epsilon_transitions(R, Q, s, m[las], acc);
     R.erase("qs");
     char curr = '\0';
-    content += "/0";
+    content += "\u200B";
+    cerr << las << endl;
     while (End < content.size()) {
         if (!R.empty() && R.count("qa") == 0) {
             curr = content[End];
@@ -204,8 +206,8 @@ int main() {
                 }
                 cerr << curr << endl;
                 End = Start + 1;
+                Last = Start;
                 Start = Start + 1;
-                Last = Start + 1;
                 R.clear();
                 Q.clear();
                 Q.insert("qs");

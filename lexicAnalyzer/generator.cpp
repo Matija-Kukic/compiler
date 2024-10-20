@@ -171,6 +171,7 @@ pair<int, int> convert_to_states(string exp, Automaton &A) {
 }
 
 int main() {
+    string first_state = "";
     map<string, string> regex;
     vector<string> input;
     map<string, Automaton>
@@ -217,12 +218,17 @@ int main() {
         if (states[i] != ' ') {
             help += states[i];
         } else {
+            if (first_state == "")
+                first_state = help;
             aA[help] = Automaton();
             help = "";
         }
     }
     Automaton a = Automaton();
     aA[help] = a;
+    if (first_state == "") {
+        first_state = help;
+    }
     N += 2;
 
     int z = 0, fs = 1;
@@ -286,7 +292,7 @@ int main() {
     }
 
     ofstream file("analizator/automat.txt");
-
+    file << first_state << endl;
     for (const auto &e : aA) {
         const auto &key = e.first;
         file << "State\n";
