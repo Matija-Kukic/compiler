@@ -45,15 +45,16 @@ class Automaton {
             const auto &key = entry.first;
             string value = entry.second;
             string z = "";
-            z += key.second;
             if (key.second == '\t') {
-                z = "|t";
-            }
-            if (key.second == '\n') {
-                z = "|n";
-            }
-            if (key.second == ' ') {
-                z = "|_";
+                z += "|t";
+            } else if (key.second == '\n') {
+                z += "|n";
+            } else if (key.second == ' ') {
+                z += "|_";
+            } else if (key.second == '\0') {
+                z += "00";
+            } else {
+                z += key.second;
             }
             ret += key.first + " " + z + " " + value + "\n";
         }
@@ -83,6 +84,7 @@ bool is_operator(string exp, int i) {
 pair<int, int> convert_to_states(string exp, Automaton &A) {
     vector<string> v;
     int n_braces = 0;
+    cout << "EXP: " << exp << endl;
     int lc = 0; // zadnji zapisani znak |
     for (int i = 0; i < exp.size(); i++) {
         if (exp[i] == '(' && is_operator(exp, i))
@@ -103,8 +105,8 @@ pair<int, int> convert_to_states(string exp, Automaton &A) {
     if (!v.empty()) {
         for (int i = 0; i < v.size(); i++) {
             pair<int, int> p = convert_to_states(v[i], A);
-            A.add_transition(left_state, p.first, '$');
-            A.add_transition(p.second, right_state, '$');
+            A.add_transition(left_state, p.first, '\0');
+            A.add_transition(p.second, right_state, '\0');
         }
     } else {
         bool prefix = false;
@@ -137,14 +139,15 @@ pair<int, int> convert_to_states(string exp, Automaton &A) {
                     if (exp[i] == '$') {
                         A.add_transition(
                             a, b,
-                            '$'); // ovo se koristi za epislon prijelaz
+                            '\0'); // ovo se koristi za epislon prijelaz
                     } else {
                         A.add_transition(a, b, exp[i]);
                     }
                 } else {
                     int j = i + 1;
                     int cnt = 0;
-                    while (!(exp[j] == ')' && cnt == 0)) {
+                    while (
+                        !(exp[j] == ')' && cnt == 0 && is_operator(exp, j))) {
                         if (exp[j] == '(' && is_operator(exp, j))
                             cnt++;
                         if (exp[j] == ')' && is_operator(exp, j))
@@ -163,16 +166,16 @@ pair<int, int> convert_to_states(string exp, Automaton &A) {
                 int y = b;
                 a = A.add_state();
                 b = A.add_state();
-                A.add_transition(a, x, '$');
-                A.add_transition(y, b, '$');
-                A.add_transition(a, b, '$');
-                A.add_transition(y, x, '$');
+                A.add_transition(a, x, '\0');
+                A.add_transition(y, b, '\0');
+                A.add_transition(a, b, '\0');
+                A.add_transition(y, x, '\0');
                 i = i + 1;
             }
-            A.add_transition(last_state, a, '$');
+            A.add_transition(last_state, a, '\0');
             last_state = b;
         }
-        A.add_transition(last_state, right_state, '$');
+        A.add_transition(last_state, right_state, '\0');
     }
     return make_pair(left_state, right_state);
 }
@@ -274,12 +277,12 @@ int main() {
             actions.push_back(input[i]);
             i++;
         }
-        cout << exp << endl;
+        cout << "EXP: " << endl << exp << endl;
         pair<int, int> p = convert_to_states(exp, aA[current_state]);
         string left = aA[current_state].letter + to_string(p.first);
         string right = aA[current_state].letter + to_string(p.second);
-        aA[current_state].add_transition2("qs", left, '$');
-        aA[current_state].add_transition2(right, "qa", '$');
+        aA[current_state].add_transition2("qs", left, '\0');
+        aA[current_state].add_transition2(right, "qa", '\0');
         string lett = aA[current_state].letter;
         if (!actions.empty()) {
             for (int c = 0; c < actions.size(); c++) {
@@ -305,6 +308,7 @@ int main() {
         file << "State\n";
         file << key + "\n";
         file << "Transitions\n";
+        // aA[key].print_tr();
         file << aA[key].ret_tr();
         file << "Units\n";
         for (const auto &e2 : aA[key].lex_unit) {
@@ -323,8 +327,11 @@ int main() {
     }
     file.close(); // Always close the file
     Automaton A;
-    pair<int, int> p = convert_to_states("-(" + regex["{bjelina}"] + ")*-", A);
+    cout << "MAMAAA" << endl;
+    string exp3 = "";
+    exp3 += "'(" + regex["{sveOsimJednostrukogNavodnikaNovogRedaITaba}"] + ")'";
+    pair<int, int> p = convert_to_states(exp3, A);
+    cout << exp3 << endl;
     A.print_tr();
-    cout << regex["{bjelina}"] << endl;
     return 0;
 }

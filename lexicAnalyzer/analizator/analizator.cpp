@@ -14,12 +14,14 @@ void epsilon_transitions(set<string> &R, set<string> &Q, stack<string> &s,
                          Automaton &A, set<string> &acc) {
     while (!s.empty()) {
         string st = s.top();
-        auto range = A.tr.equal_range(make_pair(st, '$'));
+        auto range = A.tr.equal_range(make_pair(st, '\0'));
         s.pop();
         for (auto it = range.first; it != range.second; ++it) {
             string bb = it->second;
             // cerr << st << " " << bb << endl;
             if (Q.count(bb) == 0) {
+                if (bb[0] == 'u')
+                    cout << "DEBUG: " << st << " -> " << bb << endl;
                 Q.insert(bb);
                 s.push(bb);
             }
@@ -31,7 +33,7 @@ void epsilon_transitions(set<string> &R, set<string> &Q, stack<string> &s,
                     i++;
                 }
                 acc.insert(ss);
-                // cerr << "BLAAA " << ss << endl;
+                cerr << "BLAAA " << bb << " " << st << endl;
             }
         }
     }
@@ -89,6 +91,8 @@ int main() {
                     z = '\n';
                 if (s[1] == "|_")
                     z = ' ';
+                if (s[1] == "00")
+                    z = '\0';
             }
             m[state].add_transition(s[0], z, s[2]);
         } else if (c == 'u') {
@@ -165,6 +169,7 @@ int main() {
     int Start = -1, End = 0, Last = -1;
     string Exp = "";
     int row_cnt = 0;
+    int no_line = 1, nl = 0;
     string las = "S_pocetno";
     set<string> R, Q, acc;
     stack<string> s;
@@ -196,40 +201,27 @@ int main() {
             }
             R.clear();
             epsilon_transitions(R, Q, s, m[las], acc);
+            Q.clear();
+            // cerr << "TEST: " << Q.size() << " " << s.size() << " " <<
+            // R.size()
+            //     << endl;
             cout << "R: " << endl;
             for (const auto &e : R) {
                 cout << e << " ";
             }
             cout << endl;
 
-            // cerr << "TEST: " << Q.size() << " " << s.size() << " " <<
-            // R.size()
-            //     << endl;
         } else if (!R.empty() && R.count("qa") != 0) {
             cout << "STANJA(1): " << Start << " " << End << " " << Last << " "
                  << curr << " " << Exp << " " << las << " " << R.size() << endl;
 
             auto it = acc.begin();
             Exp = *it;
-            for (auto it = acc.begin(); it != acc.end(); ++it) {
-                string s = *it;
-                if (m[las].lex_unit.count(s) == 0) {
-                    auto range = m[las].actions.equal_range(s);
-                    for (auto it = range.first; it != range.second; ++it) {
-                        auto const &key = it->first;
-                        string act = it->second.first;
-                        string param = it->second.second;
-                        if (act == "UDJI_U_STANJE") {
-                            cerr << "USAO" << endl;
-                            las = param;
-                        }
-                    }
-                }
-            }
             acc.clear();
             Last = End - 1;
             curr = content[End];
             End = End + 1;
+            Q.clear();
             for (const auto &e : R) {
                 string st = e;
                 auto range = m[las].tr.equal_range({e, curr});
@@ -240,12 +232,12 @@ int main() {
             }
             R.clear();
             epsilon_transitions(R, Q, s, m[las], acc);
+            Q.clear();
             cout << "R: " << endl;
             for (const auto &e : R) {
                 cout << e << " ";
             }
             cout << endl;
-
         } else if (R.empty()) {
             cout << "STANJA(2): " << Start << " " << End << " " << Last << " "
                  << curr << " " << Exp << " " << las << " " << R.size() << " "
@@ -253,6 +245,17 @@ int main() {
 
             if (Exp == "") {
                 // cerr << "START: " << content[Start] << endl;
+                auto range = m[las].actions.equal_range(Exp);
+                for (auto it = range.first; it != range.second; ++it) {
+                    auto const &key = it->first;
+                    string act = it->second.first;
+                    string param = it->second.second;
+                    cout << "TESTiranje " << key << " " << act << " " << param
+                         << endl;
+                    if (act == "NOVI_REDAK") {
+                        no_line++;
+                    }
+                }
                 End = Start + 1;
                 Start = Start + 1;
                 Last = Start + 1;
@@ -261,6 +264,7 @@ int main() {
                 Q.insert("qs");
                 s.push("qs");
                 epsilon_transitions(R, Q, s, m[las], acc);
+                Q.clear();
 
             } else {
                 int z = 0;
@@ -280,11 +284,17 @@ int main() {
                         int p = stoi(param);
                         Last = Start + p - 1;
                     }
+                    if (act == "NOVI_REDAK") {
+                        nl++;
+                    }
                 }
                 if (!new_lex.empty()) {
-                    f2 << new_lex << endl;
+                    f2 << new_lex << " " << no_line << " "
+                       << content.substr(Start, Last - Start + 1) << endl;
                     cerr << new_lex << endl;
                 }
+                no_line += nl;
+                nl = 0;
                 Exp = "";
                 Start = Last + 1;
                 End = Last + 1;
@@ -293,6 +303,7 @@ int main() {
                 Q.insert("qs");
                 s.push("qs");
                 epsilon_transitions(R, Q, s, m[las], acc);
+                Q.clear();
                 curr = '\0';
             }
         }
