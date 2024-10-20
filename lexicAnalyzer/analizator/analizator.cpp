@@ -156,7 +156,6 @@ int main() {
     R.erase("qs");
     char curr = '\0';
     content += "\u200B";
-    cerr << las << endl;
     while (End < content.size()) {
         if (!R.empty() && R.count("qa") == 0) {
             curr = content[End];

@@ -1,18 +1,34 @@
-S_poc
+S_jedan
 State
-S_poc
+S_jedan
 Transitions
 a0 00 a2
 a1 00 qa
 a2 a a3
-a3 00 a1
+a3 00 a4
+a4 a a5
+a5 00 a6
+a6 a a7
+a7 00 a1
 b0 00 b2
 b1 00 qa
-b2 |n b3
-b3 00 b1
+b2 a b3
+b3 00 b4
+b4 a b5
+b5 00 b6
+b6 a b7
+b7 00 b8
+b8 a b9
+b9 00 b1
+c0 00 c2
+c1 00 qa
+c2 |n c3
+c3 00 c1
 qs 00 a0
 qs 00 b0
+qs 00 c0
 Units
-a A
+a A_JED
+b B_JED
 Actions
-b NOVI_REDAK 
+c NOVI_REDAK 

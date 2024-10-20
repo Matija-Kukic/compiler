@@ -89,7 +89,6 @@ pair<int, int> convert_to_states(string exp, Automaton &A) {
     }
     if (!v.empty())
         v.push_back(exp.substr(lc, exp.size() - lc));
-    // return make_pair(0, 0);
     int left_state = A.add_state();
     int right_state = A.add_state();
     if (!v.empty()) {
@@ -174,8 +173,7 @@ int main() {
     string first_state = "";
     map<string, string> regex;
     vector<string> input;
-    map<string, Automaton>
-        aA; // all automants, i use one for each state of analyzer
+    map<string, Automaton> aA;
     string exp, lines = ""; // expresin/izraz
     int N = 0;
     while (getline(cin, lines))
@@ -298,7 +296,6 @@ int main() {
         file << "State\n";
         file << key + "\n";
         file << "Transitions\n";
-        // aA[key].print_tr();
         file << aA[key].ret_tr();
         file << "Units\n";
         for (const auto &e2 : aA[key].lex_unit) {
@@ -315,6 +312,6 @@ int main() {
             file << key << " " << value << "\n";
         }
     }
-    file.close(); // Always close the file
+    file.close();
     return 0;
 }
