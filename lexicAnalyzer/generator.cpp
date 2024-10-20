@@ -29,16 +29,7 @@ class Automaton {
     void add_transition2(string s1, string s2, char z) {
         tr.insert({{s1, z}, s2});
     }
-    void print_tr() {
-        cout << "----Transitions------" << endl;
-        for (const auto &entry : tr) {
-            const auto &key = entry.first;
-            string value = entry.second;
-            cout << "(" << key.first << ", " << key.second << ") : " << value
-                 << endl;
-        }
-        cout << "---------------------" << endl;
-    }
+
     string ret_tr() {
         string ret = "";
         for (const auto &entry : tr) {
@@ -84,7 +75,6 @@ bool is_operator(string exp, int i) {
 pair<int, int> convert_to_states(string exp, Automaton &A) {
     vector<string> v;
     int n_braces = 0;
-    cout << "EXP: " << exp << endl;
     int lc = 0; // zadnji zapisani znak |
     for (int i = 0; i < exp.size(); i++) {
         if (exp[i] == '(' && is_operator(exp, i))
@@ -277,7 +267,6 @@ int main() {
             actions.push_back(input[i]);
             i++;
         }
-        cout << "EXP: " << endl << exp << endl;
         pair<int, int> p = convert_to_states(exp, aA[current_state]);
         string left = aA[current_state].letter + to_string(p.first);
         string right = aA[current_state].letter + to_string(p.second);
@@ -294,13 +283,8 @@ int main() {
         }
         aA[current_state].res_last();
         aA[current_state].add_letter();
-        // aA[current_state].print_tr();
     }
-    /*
-    Automaton A;
-    pair<int, int> p = convert_to_states("a((a|b|c)|ab*)", A);
-    A.print_tr();*/
-    // printing to file
+
     ofstream file("analizator/automat.txt");
 
     for (const auto &e : aA) {
@@ -327,11 +311,8 @@ int main() {
     }
     file.close(); // Always close the file
     Automaton A;
-    cout << "MAMAAA" << endl;
     string exp3 = "";
     exp3 += "'(" + regex["{sveOsimJednostrukogNavodnikaNovogRedaITaba}"] + ")'";
     pair<int, int> p = convert_to_states(exp3, A);
-    cout << exp3 << endl;
-    A.print_tr();
     return 0;
 }

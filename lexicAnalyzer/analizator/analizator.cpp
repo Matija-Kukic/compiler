@@ -18,10 +18,7 @@ void epsilon_transitions(set<string> &R, set<string> &Q, stack<string> &s,
         s.pop();
         for (auto it = range.first; it != range.second; ++it) {
             string bb = it->second;
-            // cerr << st << " " << bb << endl;
             if (Q.count(bb) == 0) {
-                if (bb[0] == 'u')
-                    cout << "DEBUG: " << st << " -> " << bb << endl;
                 Q.insert(bb);
                 s.push(bb);
             }
@@ -33,7 +30,6 @@ void epsilon_transitions(set<string> &R, set<string> &Q, stack<string> &s,
                     i++;
                 }
                 acc.insert(ss);
-                cerr << "BLAAA " << bb << " " << st << endl;
             }
         }
     }
@@ -41,10 +37,6 @@ void epsilon_transitions(set<string> &R, set<string> &Q, stack<string> &s,
 }
 
 int main() {
-    /*Automaton a;
-    a.add_transition("bla", 'z', "bla2");
-    cerr << a.tr[make_pair("bla", 'z')];
-    */
     ifstream file("automat.txt");
     string line;
     map<string, Automaton>
@@ -71,7 +63,6 @@ int main() {
         }
         if (c == 's') {
             state = line;
-            cerr << state << endl;
             continue;
         } else if (c == 't') {
             string s[3] = {"", "", ""};
@@ -146,22 +137,7 @@ int main() {
             if (name != "")
                 m[state].add_action(letter, make_pair(name, parametar));
         }
-        // cerr << line << endl;
     }
-
-    /*for (const auto &e : m) {
-        const auto &bla = e.first;
-        cerr << "STATE: " << bla << endl;
-        // m[bla].print_tr();
-        for (const auto &e2 : m[bla].lex_unit) {
-            cerr << e2.first << " " << e2.second << endl;
-        }
-        for (const auto &e3 : m[bla].actions) {
-            const auto &bla2 = e3.first;
-            cerr << bla2 << " " << e3.second.first << " " << e3.second.second
-                 << endl;
-        }
-    }*/
 
     file.close();
     string content((istreambuf_iterator<char>(cin)),
@@ -178,19 +154,11 @@ int main() {
     epsilon_transitions(R, Q, s, m[las], acc);
     R.erase("qs");
     char curr = '\0';
-    for (const auto &ent : R) {
-        cerr << ent << " ";
-    }
-    ofstream f2("izlaz.txt");
     content += "/0";
     while (End < content.size()) {
         if (!R.empty() && R.count("qa") == 0) {
-            cout << "STANJA(0): " << Start << " " << End << " " << Last << " "
-                 << curr << " " << Exp << " " << las << " " << R.size() << endl;
             curr = content[End];
             End += 1;
-            // cerr << "TEST0: " << End << " " << curr << " " << R.size() <<
-            // endl;
             for (const auto &e : R) {
                 string st = e;
                 auto range = m[las].tr.equal_range({e, curr});
@@ -202,18 +170,7 @@ int main() {
             R.clear();
             epsilon_transitions(R, Q, s, m[las], acc);
             Q.clear();
-            // cerr << "TEST: " << Q.size() << " " << s.size() << " " <<
-            // R.size()
-            //     << endl;
-            cout << "R: " << endl;
-            for (const auto &e : R) {
-                cout << e << " ";
-            }
-            cout << endl;
-
         } else if (!R.empty() && R.count("qa") != 0) {
-            cout << "STANJA(1): " << Start << " " << End << " " << Last << " "
-                 << curr << " " << Exp << " " << las << " " << R.size() << endl;
 
             auto it = acc.begin();
             Exp = *it;
@@ -233,29 +190,19 @@ int main() {
             R.clear();
             epsilon_transitions(R, Q, s, m[las], acc);
             Q.clear();
-            cout << "R: " << endl;
-            for (const auto &e : R) {
-                cout << e << " ";
-            }
-            cout << endl;
         } else if (R.empty()) {
-            cout << "STANJA(2): " << Start << " " << End << " " << Last << " "
-                 << curr << " " << Exp << " " << las << " " << R.size() << " "
-                 << endl;
 
             if (Exp == "") {
-                // cerr << "START: " << content[Start] << endl;
                 auto range = m[las].actions.equal_range(Exp);
                 for (auto it = range.first; it != range.second; ++it) {
                     auto const &key = it->first;
                     string act = it->second.first;
                     string param = it->second.second;
-                    cout << "TESTiranje " << key << " " << act << " " << param
-                         << endl;
                     if (act == "NOVI_REDAK") {
                         no_line++;
                     }
                 }
+                cerr << curr << endl;
                 End = Start + 1;
                 Start = Start + 1;
                 Last = Start + 1;
@@ -274,10 +221,7 @@ int main() {
                     auto const &key = it->first;
                     string act = it->second.first;
                     string param = it->second.second;
-                    cout << "TESTiranje " << key << " " << act << " " << param
-                         << endl;
                     if (act == "UDJI_U_STANJE") {
-                        cerr << "USAO" << endl;
                         las = param;
                     }
                     if (act == "VRATI_SE") {
@@ -289,9 +233,8 @@ int main() {
                     }
                 }
                 if (!new_lex.empty()) {
-                    f2 << new_lex << " " << no_line << " "
-                       << content.substr(Start, Last - Start + 1) << endl;
-                    cerr << new_lex << endl;
+                    cout << new_lex << " " << no_line << " "
+                         << content.substr(Start, Last - Start + 1) << endl;
                 }
                 no_line += nl;
                 nl = 0;
@@ -311,5 +254,4 @@ int main() {
 
     // A.print_tr();
     return 0;
-    f2.close();
 }
