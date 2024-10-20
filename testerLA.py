@@ -45,7 +45,7 @@ for it in types:
     if out.stdout == "":
         print(f"TEST {it} PASSED")
     else:
-        print("FAILL", out.stdout)
+        print("FAILL", out.stdout, it)
 
         break
     subprocess.run(["rm", "izlaz.txt"])
