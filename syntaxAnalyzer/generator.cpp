@@ -200,6 +200,7 @@ int main() {
         vector<string> v = splitSpaces(prod);
         pair<string, string> pr = splitSemi(v);
         string uf = pr.first, exp = pr.second;
+        cout << uf << " : " << exp << " , " << next << endl;
         vector<string> expv = splitSpaces(exp);
         int dotI = 0;
         while (expv[dotI] != middleDot)
@@ -213,6 +214,7 @@ int main() {
                 string ufs = expv[fw];
                 string suf = ""; // sufix of a prod
                 int ecnt = 0;    // empty count
+                int dd = 0;
                 for (int i = fw2; i < expv.size(); i++) {
                     suf += expv[i];
                     if (i < expv.size() - 1)
@@ -220,17 +222,21 @@ int main() {
                     if (expv[i][0] == '<') {
                         if (g.empt.count(expv[i]) > 0)
                             ecnt++;
+                    } else {
+                        dd++;
                     }
                 }
-                cout << suf << endl;
+                // cout << suf << endl;
                 string signs = "";
                 if (suf == "") {
                     signs = next;
                 } else {
                     int cnt = 0;
                     cout << "CNT TEST" << cnt << " " << ecnt << endl;
+                    set<string> sig;
                     for (const auto &it : g.Starts[suf]) {
                         signs += it + " ";
+                        sig.insert(it);
                     }
                     vector<string> v2 = splitSpaces(suf);
                     for (int c = 0; c < v2.size(); c++) {
@@ -239,8 +245,14 @@ int main() {
                                 cnt++;
                         }
                     }
-                    if (ecnt == cnt && cnt != 0) {
-                        signs += next;
+                    if (ecnt == cnt && cnt != 0 && !dd) {
+                        vector<string> help = splitSpaces(next);
+                        for (int kk = 0; kk < help.size(); kk++)
+                            sig.insert(help[kk]);
+                        signs = "";
+                        for (const auto &e : sig) {
+                            signs += e + " ";
+                        }
                     }
                 }
                 auto range = g.dict.equal_range(ufs);
@@ -278,7 +290,6 @@ int main() {
             if (i != expv.size() - 1)
                 s += " ";
         }
-        cout << "NEW PROD: " << s << endl;
         string ns = expv[dotI + 1], ne = uf + " : " + s;
         auto rn = g.tr.equal_range({{prod, next}, ns});
         int z2 = 0;
