@@ -40,8 +40,8 @@ pair<string, string> splitSemi(vector<string> &v) {
 }
 
 unsigned long long hashFunc(set<int> &s) {
-    const unsigned long long BASE = 31;
-    const unsigned long long MOD = 1e9 + 9;
+    unsigned long long BASE = 31;
+    unsigned long long MOD = 1e9 + 9;
     unsigned long long hashValue = 0;
 
     for (int num : s) {

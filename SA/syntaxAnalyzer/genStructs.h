@@ -22,11 +22,8 @@ struct Gen {
     multimap<pair<pair<string, string>, string>, pair<string, string>> tr;
     map<string, map<string, int>> visited;
     map<pair<string, string>, int> seqMap;
-    int seq = 0;
-};
-struct lrItem {
-    string prod;
-    string signs;
+    map<pair<string, string>, int> prodMap;
+    int seq = 0, seq2 = 0;
 };
 struct DFA {
     vector<int> states;
@@ -34,5 +31,9 @@ struct DFA {
     map<unsigned long long int, int> hashMap;
     int startState = 0;
     map<pair<int, string>, int> tr;
+};
+struct tables {
+    map<int, map<string, string>> action;
+    map<int, map<string, string>> new_state;
 };
 #endif // !GENSTRUCTS

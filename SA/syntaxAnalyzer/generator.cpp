@@ -72,6 +72,8 @@ int main() {
                 if (exp == "$") {
                     g.empt.insert(line);
                 }
+                g.prodMap[{line, exp}] = g.seq2;
+                g.seq2++;
                 a++;
             }
             q = a - 1;
@@ -180,7 +182,7 @@ int main() {
     //     }
     //     cout << endl;
     // }
-    string ss = "<startStatebla>";
+    string ss = "<S`>";
     string middleDot = "\u00B7", endCh = "\u22A5";
     // cout << g.startState << endl;
     pair<pair<string, string>, string> first = {
@@ -344,9 +346,9 @@ int main() {
         }
         q.pop();
     }
-    // for (const auto &it : states) {
-    //     dfa.oldTr[0].insert(it);
-    // }
+    for (const auto &it : states) {
+        dfa.oldTr[0].insert(it);
+    }
     q2.push(states);
 
     unsigned long long d = hashFunc(nstates);
@@ -404,9 +406,9 @@ int main() {
                 q2.push(nst);
                 unsigned long long nd = hashFunc(inst);
                 dfa.hashMap[nd] = ns;
-                // for (const auto &it3 : nst) {
-                //     dfa.oldTr[ns].insert(it3);
-                // }
+                for (const auto &it3 : nst) {
+                    dfa.oldTr[ns].insert(it3);
+                }
                 //  cout << cs << " " << it << " " << ns << endl;
             }
             if (old_in != -1 && !nst.empty()) {
@@ -421,16 +423,113 @@ int main() {
     //         cout << e2.first << " [" << e2.second << " ] " << endl;
     //     }
     // }
-    cout << "transitions " << endl;
-    for (const auto &it : dfa.tr) {
-        cout << it.first.first << " " << it.first.second << " , " << it.second
+    // cout << "transitions " << endl;
+    // for (const auto &it : dfa.tr) {
+    //     cout << it.first.first << " " << it.first.second << " , " <<
+    //     it.second
+    //          << endl;
+    // }
+    // cout << "NKA stats:" << endl;
+    // cout << "Broj stanja: " << g.seqMap.size()
+    //     << " Broj prijelaza: " << g.tr.size() << endl;
+    // cout << "DKA stats:" << endl;
+    // cout << "Broj stanja: " << dfa.hashMap.size()
+    //     << " Broj prijelaza: " << dfa.tr.size() << endl;
+    //  Action table
+    cout << "BLA" << endl;
+    tables tab;
+    for (const auto &e : dfa.oldTr) {
+        int cs = e.first;
+        for (const auto &e2 : e.second) {
+            string prod = e2.first;
+            string contx = e2.second;
+            vector<string> v = splitSpaces(prod);
+            pair<string, string> p = splitSemi(v);
+            string uf = p.first, tr = p.second;
+            vector<string> v2 = splitSpaces(tr);
+            int dotI = 0;
+            while (v2[dotI] != middleDot)
+                dotI++;
+            if (dotI != v2.size() - 1) {
+                // for function "move"
+                if (v2[dotI + 1][0] != '<') {
+                    string sign = v2[dotI + 1];
+                    if (dfa.tr.find({cs, sign}) != dfa.tr.end()) {
+                        tab.action[cs][sign] =
+                            "p" + to_string(dfa.tr[{cs, sign}]);
+                    }
+                }
+            } else {
+                vector<string> con = splitSpaces(contx);
+                if (v2[dotI - 1] == g.startState && con[0] == endCh &&
+                    uf == ss) {
+                    tab.action[cs][endCh] = "Acc"; // accepted state in parser
+                    continue;
+                }
+                for (int i = 0; i < con.size(); i++) {
+                    string letter = con[i];
+                    string prod;
+                    for (int j = 0; j < v2.size(); j++) {
+                        if (v2[j] == middleDot)
+                            continue;
+                        if (v2[j] != middleDot) {
+                            prod += v2[j];
+                        }
+                        if (j < v2.size() - 2) {
+                            prod += " ";
+                        }
+                    }
+                    if (tab.action.find(cs) != tab.action.end() &&
+                        tab.action[cs].find(letter) != tab.action[cs].end()) {
+                        cout << prod << endl;
+                        if (tab.action[cs][letter][0] == 'p')
+                            continue;
+                        else {
+                            int nr = g.prodMap[{uf, prod}];
+                            string sor = tab.action[cs][letter];
+                            sor = sor.substr(1);
+                            int Or = stoi(sor);
+                            cout << "SOR TEST" << sor << endl;
+                            if (nr < Or) {
+                                tab.action[cs][letter] = "r" + to_string(nr);
+                            }
+                        }
+                    } else {
+                        int nr = g.prodMap[{uf, prod}];
+                        cout << cs << " " << nr << " " << prod << ";" << endl;
+                        tab.action[cs][letter] = "r" + to_string(nr);
+                    }
+                }
+            }
+        }
+    }
+    for (const auto &it : g.prodMap) {
+        cout << it.first.first << ", " << it.first.second << "; " << it.second
              << endl;
     }
-    cout << "NKA stats:" << endl;
-    cout << "Broj stanja: " << g.seqMap.size()
-         << " Broj prijelaza: " << g.tr.size() << endl;
-    cout << "DKA stats:" << endl;
-    cout << "Broj stanja: " << dfa.hashMap.size()
-         << " Broj prijelaza: " << dfa.tr.size() << endl;
+    cout << "ACTION TABLE" << endl;
+    for (const auto &it : tab.action) {
+        for (const auto &it2 : it.second) {
+            cout << it.first << ", " << it2.first << " ; " << it2.second
+                 << endl;
+        }
+    }
+    for (const auto &it : dfa.tr) {
+        int cs = it.first.first;
+        string sign = it.first.second;
+        if (sign[0] == '<') {
+            if (dfa.tr.find({cs, sign}) != dfa.tr.end()) {
+                int ns = dfa.tr[{cs, sign}];
+                tab.new_state[cs][sign] = "S" + to_string(ns);
+            }
+        }
+    }
+    cout << "NEW STATE TABLE" << endl;
+    for (const auto &it : tab.new_state) {
+        for (const auto &it2 : it.second) {
+            cout << it.first << ", " << it2.first << " ; " << it2.second
+                 << endl;
+        }
+    }
     return 0;
 }
