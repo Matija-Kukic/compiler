@@ -1,10 +1,13 @@
-%V <S1> <S> <C>
-%T c d
-%Syn OPERAND UMINUS LIJEVA_ZAGRADA
-<S1>
- <S>
-<S>
- <C> <C>
-<C>
- c <C>
- d
+%V <Expr> <Term> <Factor>
+%T AND OR ( ) true false
+%Syn AND
+<Expr>
+ <Expr> OR <Term>
+ <Term>
+<Term>
+ <Term> AND <Factor>
+ <Factor>
+<Factor>
+ ( <Expr> )
+ true
+ false

@@ -97,10 +97,10 @@ int main() {
             }
         }
     }
-    cout << "Empty signs: ";
-    for (const auto &item : g.empt) {
-        cout << item << " ; ";
-    }
+    // cout << "Empty signs: ";
+    // for (const auto &item : g.empt) {
+    //     cout << item << " ; ";
+    // }
     for (const auto &pair : g.dict) {
         string row = pair.first;
         vector v = splitSpaces(pair.second);
@@ -172,14 +172,14 @@ int main() {
             }
         }
     }
-    cout << "Zapocinje start:" << endl;
-    for (const auto &pair : g.Starts) {
-        cout << pair.first << ": ";
-        for (const auto &item : pair.second) {
-            cout << item << " ";
-        }
-        cout << endl;
-    }
+    // cout << "Zapocinje start:" << endl;
+    // for (const auto &pair : g.Starts) {
+    //     cout << pair.first << ": ";
+    //     for (const auto &item : pair.second) {
+    //         cout << item << " ";
+    //     }
+    //     cout << endl;
+    // }
     string ss = "<startStatebla>";
     string middleDot = "\u00B7", endCh = "\u22A5";
     // cout << g.startState << endl;
@@ -191,7 +191,8 @@ int main() {
     queue<pair<string, string>> q;
     set<pair<pair<string, string>, string>> check;
     q.push({first.first.first, first.first.second});
-    cout << q.front().first << " " << q.front().second << endl;
+    g.seqMap[{first.first.first, first.first.second}] = g.seq;
+    g.seq += 1;
     while (!q.empty()) {
         string prod = q.front().first;
         string next = q.front().second;
@@ -200,7 +201,6 @@ int main() {
         vector<string> v = splitSpaces(prod);
         pair<string, string> pr = splitSemi(v);
         string uf = pr.first, exp = pr.second;
-        cout << uf << " : " << exp << " , " << next << endl;
         vector<string> expv = splitSpaces(exp);
         int dotI = 0;
         while (expv[dotI] != middleDot)
@@ -232,7 +232,6 @@ int main() {
                     signs = next;
                 } else {
                     int cnt = 0;
-                    cout << "CNT TEST" << cnt << " " << ecnt << endl;
                     set<string> sig;
                     for (const auto &it : g.Starts[suf]) {
                         signs += it + " ";
@@ -272,6 +271,8 @@ int main() {
                     if (!z) {
                         g.tr.insert({pp, {nprod, signs}});
                         q.push({nprod, signs});
+                        g.seqMap[{nprod, signs}] = g.seq;
+                        g.seq += 1;
                     }
                 }
             }
@@ -302,15 +303,22 @@ int main() {
         if (!z2) {
             g.tr.insert({{{prod, next}, ns}, {ne, next}});
             q.push({uf + " : " + s, next});
+            g.seqMap[{ne, next}] = g.seq;
+            g.seq += 1;
         }
     }
-    cout << "TEST: " << endl;
-    for (const auto &entry : g.tr) {
-        cout << "(" << entry.first.first.first << ", "
-             << entry.first.first.second << "), " << entry.first.second
-             << ") -> (" << entry.second.first << ", " << entry.second.second
-             << ")" << endl;
-    }
+    // cout << "TEST: " << endl;
+    // for (const auto &entry : g.tr) {
+    //    cout << "(" << entry.first.first.first << ", "
+    //         << entry.first.first.second << "), " << entry.first.second
+    //         << ") -> (" << entry.second.first << ", " << entry.second.second
+    //         << ")" << endl;
+    //}
+    // cout << "SEQ MAP" << endl;
+    // for (const auto e : g.seqMap) {
+    //    cout << e.first.first << " [" << e.first.second << "] -> " << e.second
+    //         << endl;
+    //}
     set<pair<string, string>> states; // nst are new states
     DFA dfa;
     dfa.states.push_back(0);
@@ -318,38 +326,46 @@ int main() {
     queue<set<pair<string, string>>> q2;
     queue<int> qi;
     qi.push(0);
+
+    set<int> nstates;
     for (const auto &it : states) {
         q.push(it);
+        nstates.insert(g.seqMap[it]);
     }
     while (!q.empty()) {
         pair<string, string> pr = q.front();
-        cout << pr.first << " , " << pr.second << endl;
         auto rn = g.tr.equal_range({pr, "$"});
         for (auto it = rn.first; it != rn.second; ++it) {
             if (states.count(it->second) == 0) {
                 q.push(it->second);
                 states.insert(it->second);
+                nstates.insert(g.seqMap[it->second]);
             }
         }
         q.pop();
     }
-    for (const auto &it : states) {
-        dfa.oldTr[0].insert(it);
-    }
+    // for (const auto &it : states) {
+    //     dfa.oldTr[0].insert(it);
+    // }
     q2.push(states);
+
+    unsigned long long d = hashFunc(nstates);
+    dfa.hashMap[d] = 0;
+    // cout << "TEST " << d << endl;
     while (!q2.empty()) {
+        // cout << "TESTING " << endl;
         set<pair<string, string>> curr = q2.front();
         q2.pop();
         int cs = qi.front();
         qi.pop();
         for (const auto &it : all) {
             set<pair<string, string>> nst;
+            set<int> inst;
             for (const auto &i : curr) {
                 auto rn = g.tr.equal_range({i, it});
                 for (auto it2 = rn.first; it2 != rn.second; ++it2) {
                     nst.insert({it2->second});
-                    cout << "TEST " << it2->second.first << " , "
-                         << it2->second.second << endl;
+                    inst.insert(g.seqMap[it2->second]);
                 }
             }
             for (const auto &it2 : nst) {
@@ -357,58 +373,64 @@ int main() {
             }
             while (!q.empty()) {
                 pair<string, string> pr = q.front();
-                cout << pr.first << " , " << pr.second << endl;
                 auto rn = g.tr.equal_range({pr, "$"});
                 for (auto it2 = rn.first; it2 != rn.second; ++it2) {
                     if (nst.count(it2->second) == 0) {
                         q.push(it2->second);
                         nst.insert(it2->second);
+                        inst.insert(g.seqMap[it2->second]);
                     }
                 }
                 q.pop();
             }
+            unsigned long long dd = hashFunc(inst);
             int old_in = -1;
-            for (const auto &en : dfa.oldTr) {
-                int cnt2 = 0;
-                for (const auto &e2 : en.second) {
-                    for (const auto &e : nst) {
-                        if (e2 == e) {
-                            cnt2++;
-                        }
-                    }
-                }
-                if (nst.size() == cnt2 && cnt2 == en.second.size() &&
-                    cnt2 != 0) {
-                    old_in = en.first;
-                }
+            // for (const auto &en : dfa.oldTr) {
+            //     set<pair<string, string>> hs = en.second;
+            //     if (hs == nst) {
+            //         old_in = en.first;
+            //     }
+            // }
+            auto item = dfa.hashMap.find(dd);
+            if (item != dfa.hashMap.end()) {
+                old_in = dfa.hashMap[dd];
             }
+            // cout << dd << " " << old_in << endl;
             if (old_in == -1 && !nst.empty()) {
                 int ns = dfa.states.back() + 1;
                 dfa.tr[{cs, it}] = ns;
                 dfa.states.push_back(ns);
                 qi.push(ns);
                 q2.push(nst);
-                for (const auto &it3 : nst) {
-                    dfa.oldTr[ns].insert(it3);
-                }
-                cout << cs << " " << it << " " << ns << endl;
+                unsigned long long nd = hashFunc(inst);
+                dfa.hashMap[nd] = ns;
+                // for (const auto &it3 : nst) {
+                //     dfa.oldTr[ns].insert(it3);
+                // }
+                //  cout << cs << " " << it << " " << ns << endl;
             }
             if (old_in != -1 && !nst.empty()) {
                 dfa.tr[{cs, it}] = old_in;
             }
         }
     }
-    cout << "DKA STATES" << endl;
-    for (const auto &en : dfa.oldTr) {
-        cout << en.first << " : " << endl;
-        for (const auto &e2 : en.second) {
-            cout << e2.first << " [" << e2.second << " ] " << endl;
-        }
-    }
+    // cout << "DKA STATES" << endl;
+    // for (const auto &en : dfa.oldTr) {
+    //     cout << en.first << " : " << endl;
+    //     for (const auto &e2 : en.second) {
+    //         cout << e2.first << " [" << e2.second << " ] " << endl;
+    //     }
+    // }
     cout << "transitions " << endl;
     for (const auto &it : dfa.tr) {
         cout << it.first.first << " " << it.first.second << " , " << it.second
              << endl;
     }
+    cout << "NKA stats:" << endl;
+    cout << "Broj stanja: " << g.seqMap.size()
+         << " Broj prijelaza: " << g.tr.size() << endl;
+    cout << "DKA stats:" << endl;
+    cout << "Broj stanja: " << dfa.hashMap.size()
+         << " Broj prijelaza: " << dfa.tr.size() << endl;
     return 0;
 }

@@ -1,6 +1,6 @@
 #include "genStructs.h"
+#include <cmath> // Include cmath for fmod
 #include <utility>
-
 vector<string> splitSpaces(string ent) {
     vector<string> v;
     string p = "";
@@ -38,5 +38,17 @@ pair<string, string> splitSemi(vector<string> &v) {
     }
     return {ret1, ret2};
 }
+
+unsigned long long hashFunc(set<int> &s) {
+    const unsigned long long BASE = 31;
+    const unsigned long long MOD = 1e9 + 9;
+    unsigned long long hashValue = 0;
+
+    for (int num : s) {
+        hashValue = (hashValue * BASE + (num % MOD)) % MOD;
+    }
+    return hashValue;
+}
+
 // Gen::Gen() : fnSign(), unSign(), syn(), dict() {};
 void Gen::insertTr(string key, string val) { dict.insert(make_pair(key, val)); }
