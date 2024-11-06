@@ -1,0 +1,29 @@
+%V <A> <B>
+%T a b
+%Syn b
+Productions
+<A> $ 3
+<A> <B> <A> 0
+<B> a <B> 1
+<B> b 2
+Actions
+0 a p3
+0 b p4
+1 ⊥ Acc
+2 a p3
+2 b p4
+3 a p3
+3 b p4
+4 a r2
+4 b r2
+4 ⊥ r2
+5 ⊥ r0
+6 a r1
+6 b r1
+6 ⊥ r1
+NEW STATES
+0 <A> S1
+0 <B> S2
+2 <A> S5
+2 <B> S2
+3 <B> S6

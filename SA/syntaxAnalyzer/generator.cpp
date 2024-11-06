@@ -1,4 +1,5 @@
 #include "genStructs.h"
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <queue>
@@ -15,6 +16,7 @@ int main() {
     // for (int i = 0; i < v.size(); i++) {
     //     cout << v[i] << " : ";
     // }
+    ofstream file("analizator/table.txt");
     string line;
     vector<string> lines;
     while (getline(cin, line))
@@ -23,6 +25,7 @@ int main() {
     for (int q = 0; q < 3; q++) {
         vector<string> v = splitSpaces(lines[q]);
         if (v[0] == "%V") {
+            file << lines[q] << endl;
             for (int i = 1; i < v.size(); i++) {
                 if (i == 1)
                     g.startState = v[i];
@@ -30,11 +33,13 @@ int main() {
                 all.insert(v[i]);
             }
         } else if (v[0] == "%T") {
+            file << lines[q] << endl;
             for (int i = 1; i < v.size(); i++) {
                 g.fnSign.insert(v[i]);
                 all.insert(v[i]);
             }
         } else if (v[0] == "%Syn") {
+            file << lines[q] << endl;
             for (int i = 1; i < v.size(); i++) {
                 g.syn.insert(v[i]);
             }
@@ -503,15 +508,21 @@ int main() {
             }
         }
     }
+    file << "Productions" << endl;
     for (const auto &it : g.prodMap) {
-        cout << it.first.first << ", " << it.first.second << "; " << it.second
+        // cout << it.first.first << ", " << it.first.second << "; " <<
+        // it.second
+        //      << endl;
+        file << it.first.first << " " << it.first.second << " " << it.second
              << endl;
     }
-    cout << "ACTION TABLE" << endl;
+    //    cout << "ACTION TABLE" << endl;
+    file << "Actions" << endl;
     for (const auto &it : tab.action) {
         for (const auto &it2 : it.second) {
-            cout << it.first << ", " << it2.first << " ; " << it2.second
-                 << endl;
+            // cout << it.first << ", " << it2.first << " ; " << it2.second
+            //      << endl;
+            file << it.first << " " << it2.first << " " << it2.second << endl;
         }
     }
     for (const auto &it : dfa.tr) {
@@ -524,12 +535,15 @@ int main() {
             }
         }
     }
-    cout << "NEW STATE TABLE" << endl;
+    // cout << "NEW STATE TABLE" << endl;
+    file << "NEW STATES" << endl;
     for (const auto &it : tab.new_state) {
         for (const auto &it2 : it.second) {
-            cout << it.first << ", " << it2.first << " ; " << it2.second
-                 << endl;
+            // cout << it.first << ", " << it2.first << " ; " << it2.second
+            //      << endl;
+            file << it.first << " " << it2.first << " " << it2.second << endl;
         }
     }
+    file.close();
     return 0;
 }
