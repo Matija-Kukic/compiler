@@ -90,24 +90,25 @@ int main() {
     //     cout << item << " ; ";
     // }
     // cout << endl;
-    cout << "Productions" << endl;
-    for (const auto &it : tab.prodMap) {
-        cout << it.first << ", " << it.second.first << " : " << it.second.second
-             << endl;
-    }
-    cout << "ACTION TABLE" << endl;
-    cout << "Actions" << endl;
-    for (const auto &it : tab.action) {
-        for (const auto &it2 : it.second) {
-            cout << it.first << " " << it2.first << " " << it2.second << endl;
-        }
-    }
-    cout << "NEW STATES" << endl;
-    for (const auto &it : tab.new_state) {
-        for (const auto &it2 : it.second) {
-            cout << it.first << " " << it2.first << " " << it2.second << endl;
-        }
-    }
+    // cout << "Productions" << endl;
+    // for (const auto &it : tab.prodMap) {
+    //    cout << it.first << ", " << it.second.first << " : " <<
+    //    it.second.second
+    //         << endl;
+    //}
+    // cout << "ACTION TABLE" << endl;
+    // cout << "Actions" << endl;
+    // for (const auto &it : tab.action) {
+    //    for (const auto &it2 : it.second) {
+    //        cout << it.first << " " << it2.first << " " << it2.second << endl;
+    //    }
+    //}
+    // cout << "NEW STATES" << endl;
+    // for (const auto &it : tab.new_state) {
+    //    for (const auto &it2 : it.second) {
+    //        cout << it.first << " " << it2.first << " " << it2.second << endl;
+    //    }
+    //}
     // LU lu("bla", 1, "bla");
     // cout << "BLA" << endl;
     // cout << lu.sign << " " << lu.row << " " << lu.content << endl;
@@ -146,15 +147,15 @@ int main() {
     // }
     // cout << last_id << endl;
     int crs = 0; // index of current readed input
-    stack<LRI> stack;
+    stack<LRI> st1;
     string qf = "\u2207";
     LRI l1(0, last_id, qf);
     tree.sm[last_id] = qf;
     last_id++;
-    for (const auto &e : tree.sm) {
-        cout << e.first << " " << e.second << endl;
-    }
-    stack.push(l1);
+    // for (const auto &e : tree.sm) {
+    //     cout << e.first << " " << e.second << endl;
+    // }
+    st1.push(l1);
     string red_color = "\033[31m";
     string green_color = "\033[32m";
     string reset = "\033[0m";
@@ -163,39 +164,45 @@ int main() {
             crs = input.size() - 1;
         string csign = input[crs].sign;
         int crow = input[crs].row;
-        int tlrs = stack.top().lrs;
-        int tid = stack.top().id;
-        string ts = stack.top().s;
+        int tlrs = st1.top().lrs;
+        int tid = st1.top().id;
+        string ts = st1.top().s;
         bool Act = (tab.action.find(tlrs) != tab.action.end() &&
                     tab.action[tlrs].find(csign) != tab.action[tlrs].end());
         if (Act) {
             string act = tab.action[tlrs][csign];
-            cout << act << endl;
             if (act[0] == 'p') {
                 int nlrs = stoi(act.substr(1));
                 string ns = csign;
                 int nid = crs;
                 crs++;
-                stack.push(LRI(nlrs, nid, ns));
+                st1.push(LRI(nlrs, nid, ns));
             } else if (act[0] == 'r') {
                 int rn = stoi(act.substr(1));
                 string uf = tab.prodMap[rn].first,
                        prod = tab.prodMap[rn].second;
+                vector<int> children;
                 if (prod != "$") {
-                    int olrs = stack.top().lrs;
+                    int olrs = st1.top().lrs;
                     vector<string> v = splitSpaces(prod);
                     for (int i = v.size() - 1; i >= 0; --i) {
                         string ss = v[i];
-                        string sts = stack.top().s;
+                        string sts = st1.top().s;
                         if (sts == ss) {
-                            stack.pop();
+                            int child_id = st1.top().id;
+                            children.push_back(child_id);
+                            st1.pop();
                         } else {
                             cerr << red_color << "GRESKA" << reset << endl;
                             exit(0);
                         }
                     }
+                } else {
+                    tree.sm[last_id] = "$";
+                    children.push_back(last_id);
+                    last_id++;
                 }
-                int olrs = stack.top().lrs;
+                int olrs = st1.top().lrs;
                 int nlrs;
                 bool Act2 =
                     (tab.new_state.find(olrs) != tab.new_state.end() &&
@@ -209,22 +216,58 @@ int main() {
                 int nid = last_id;
                 last_id++;
                 tree.sm[nid] = uf;
-                stack.push(LRI(nlrs, nid, uf));
+                st1.push(LRI(nlrs, nid, uf));
+                for (int j = 0; j < children.size(); j++) {
+                    tree.m[nid].push_back(children[j]);
+                }
             } else if (act == "Acc") {
-                cout << green_color << "Prihvacen" << reset << endl;
+                cerr << green_color << "Prihvacen" << reset << endl;
                 break;
             }
         } else {
             cerr << red_color << "STACK " << tid << " " << tlrs << " " << ts
                  << endl
                  << "READ " << crs << " " << csign << reset << endl;
-            break;
+            while (tab.syn.count(csign) == 0) {
+                crs++;
+                csign = input[crs].sign;
+            }
+            while (!(tab.action.find(tlrs) != tab.action.end() &&
+                     tab.action[tlrs].find(csign) != tab.action[tlrs].end())) {
+                int id = st1.top().id;
+                tree.m.erase(id);
+                st1.pop();
+                tlrs = st1.top().lrs;
+            }
         }
     }
-    while (!stack.empty()) {
-        cout << stack.top().s << " " << stack.top().id << " " << stack.top().lrs
-             << endl;
-        stack.pop();
+    tree.root_id = st1.top().id;
+    // while (!st1.empty()) {
+    //     cout << st1.top().s << " " << st1.top().id << " " <<
+    //     st1.top().lrs
+    //          << endl;
+    //     st1.pop();
+    // }
+    // set<int> visited;
+    stack<pair<int, int>> st2;
+    st2.push({tree.root_id, 0});
+    while (!st2.empty()) {
+        int cr = st2.top().first;
+        int depth = st2.top().second;
+        st2.pop();
+        if (cr >= input.size()) {
+            for (int i = 0; i < depth; i++)
+                cout << " ";
+            cout << tree.sm[cr] << endl;
+        } else {
+            for (int i = 0; i < depth; i++)
+                cout << " ";
+            cout << input[cr].sign << " " << input[cr].row << " "
+                 << input[cr].content << endl;
+        }
+        for (const auto &e : tree.m[cr]) {
+            st2.push({e, depth + 1});
+        }
     }
     return 0;
 }

@@ -421,19 +421,19 @@ int main() {
             }
         }
     }
-    cout << "DKA STATES" << endl;
-    for (const auto &en : dfa.oldTr) {
-        cout << en.first << " : " << endl;
-        for (const auto &e2 : en.second) {
-            cout << e2.first << " [" << e2.second << " ] " << endl;
-        }
-    }
-    // cout << "transitions " << endl;
-    // for (const auto &it : dfa.tr) {
-    //     cout << it.first.first << " " << it.first.second << " , " <<
-    //     it.second
-    //          << endl;
+    // cout << "DKA STATES" << endl;
+    // for (const auto &en : dfa.oldTr) {
+    //     cout << en.first << " : " << endl;
+    //     for (const auto &e2 : en.second) {
+    //         cout << e2.first << " [" << e2.second << " ] " << endl;
+    //     }
     // }
+    //  cout << "transitions " << endl;
+    //  for (const auto &it : dfa.tr) {
+    //      cout << it.first.first << " " << it.first.second << " , " <<
+    //      it.second
+    //           << endl;
+    //  }
     // cout << "NKA stats:" << endl;
     // cout << "Broj stanja: " << g.seqMap.size()
     //     << " Broj prijelaza: " << g.tr.size() << endl;
@@ -441,7 +441,7 @@ int main() {
     // cout << "Broj stanja: " << dfa.hashMap.size()
     //     << " Broj prijelaza: " << dfa.tr.size() << endl;
     //  Action table
-    cout << "BLA" << endl;
+    // cout << "BLA" << endl;
     tables tab;
     for (const auto &e : dfa.oldTr) {
         int cs = e.first;
@@ -451,12 +451,12 @@ int main() {
             vector<string> v = splitSpaces(prod);
             pair<string, string> p = splitSemi(v);
             string uf = p.first, tr = p.second;
-            cout << uf << " " << tr << endl;
+            // cout << uf << " " << tr << endl;
             int dotI = 0;
             if (tr == middleDot + " " + "$") {
                 tr = "";
                 tr = tr + "$" + " " + middleDot;
-                cout << "ERROR " << tr << endl;
+                // cout << "ERROR " << tr << endl;
             }
             vector<string> v2 = splitSpaces(tr);
             while (v2[dotI] != middleDot)
@@ -500,14 +500,15 @@ int main() {
                             string sor = tab.action[cs][letter];
                             sor = sor.substr(1);
                             int Or = stoi(sor);
-                            cout << "SOR TEST" << sor << endl;
+                            // cout << "SOR TEST" << sor << endl;
                             if (nr < Or) {
                                 tab.action[cs][letter] = "r" + to_string(nr);
                             }
                         }
                     } else {
                         int nr = g.prodMap[{uf, prod}];
-                        cout << cs << " " << nr << " " << prod << ";" << endl;
+                        // cout << cs << " " << nr << " " << prod << ";" <<
+                        // endl;
                         tab.action[cs][letter] = "r" + to_string(nr);
                     }
                 }
