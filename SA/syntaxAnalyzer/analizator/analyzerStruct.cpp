@@ -36,3 +36,6 @@ pair<string, string> splitSemi(vector<string> &v) {
     }
     return {ret1, ret2};
 }
+LU::LU(string sign, int row, string content)
+    : sign(sign), row(row), content(content) {};
+LRI::LRI(int lrs, int id, string s) : lrs(lrs), id(id), s(s) {};

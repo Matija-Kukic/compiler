@@ -9,9 +9,11 @@ Productions
 Actions
 0 a p3
 0 b p4
+0 ⊥ r3
 1 ⊥ Acc
 2 a p3
 2 b p4
+2 ⊥ r3
 3 a p3
 3 b p4
 4 a r2

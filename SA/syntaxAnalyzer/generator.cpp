@@ -421,13 +421,13 @@ int main() {
             }
         }
     }
-    // cout << "DKA STATES" << endl;
-    // for (const auto &en : dfa.oldTr) {
-    //     cout << en.first << " : " << endl;
-    //     for (const auto &e2 : en.second) {
-    //         cout << e2.first << " [" << e2.second << " ] " << endl;
-    //     }
-    // }
+    cout << "DKA STATES" << endl;
+    for (const auto &en : dfa.oldTr) {
+        cout << en.first << " : " << endl;
+        for (const auto &e2 : en.second) {
+            cout << e2.first << " [" << e2.second << " ] " << endl;
+        }
+    }
     // cout << "transitions " << endl;
     // for (const auto &it : dfa.tr) {
     //     cout << it.first.first << " " << it.first.second << " , " <<
@@ -451,10 +451,17 @@ int main() {
             vector<string> v = splitSpaces(prod);
             pair<string, string> p = splitSemi(v);
             string uf = p.first, tr = p.second;
-            vector<string> v2 = splitSpaces(tr);
+            cout << uf << " " << tr << endl;
             int dotI = 0;
+            if (tr == middleDot + " " + "$") {
+                tr = "";
+                tr = tr + "$" + " " + middleDot;
+                cout << "ERROR " << tr << endl;
+            }
+            vector<string> v2 = splitSpaces(tr);
             while (v2[dotI] != middleDot)
                 dotI++;
+
             if (dotI != v2.size() - 1) {
                 // for function "move"
                 if (v2[dotI + 1][0] != '<') {
@@ -486,7 +493,6 @@ int main() {
                     }
                     if (tab.action.find(cs) != tab.action.end() &&
                         tab.action[cs].find(letter) != tab.action[cs].end()) {
-                        cout << prod << endl;
                         if (tab.action[cs][letter][0] == 'p')
                             continue;
                         else {

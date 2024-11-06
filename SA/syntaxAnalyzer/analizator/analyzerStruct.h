@@ -16,5 +16,22 @@ struct tables {
     set<string> unSign, fnSign, syn;
     map<int, pair<string, string>> prodMap;
 };
-
+// struct for a lexic unit
+struct LU {
+    int row;
+    string content;
+    string sign;
+    LU(string sign, int row, string content);
+};
+struct Tree {
+    map<int, vector<int>> m;
+    map<int, string> sm;
+    int root_id;
+};
+struct LRI {
+    int lrs; // LR state
+    int id;
+    string s;
+    LRI(int lrs, int id, string s);
+};
 #endif // !ANALYZERSTRUCT
