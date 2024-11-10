@@ -77,41 +77,6 @@ int main() {
         }
     }
     file.close();
-    // cout << "Unfinished signs: ";
-    // for (const auto &item : tab.unSign) {
-    //     cout << item << " ; ";
-    // }
-    // cout << endl << "Finished signs: ";
-    // for (const auto &item : tab.fnSign) {
-    //     cout << item << " ; ";
-    // }
-    // cout << endl << "Sync signs: ";
-    // for (const auto &item : tab.syn) {
-    //     cout << item << " ; ";
-    // }
-    // cout << endl;
-    // cout << "Productions" << endl;
-    // for (const auto &it : tab.prodMap) {
-    //    cout << it.first << ", " << it.second.first << " : " <<
-    //    it.second.second
-    //         << endl;
-    //}
-    // cout << "ACTION TABLE" << endl;
-    // cout << "Actions" << endl;
-    // for (const auto &it : tab.action) {
-    //    for (const auto &it2 : it.second) {
-    //        cout << it.first << " " << it2.first << " " << it2.second << endl;
-    //    }
-    //}
-    // cout << "NEW STATES" << endl;
-    // for (const auto &it : tab.new_state) {
-    //    for (const auto &it2 : it.second) {
-    //        cout << it.first << " " << it2.first << " " << it2.second << endl;
-    //    }
-    //}
-    // LU lu("bla", 1, "bla");
-    // cout << "BLA" << endl;
-    // cout << lu.sign << " " << lu.row << " " << lu.content << endl;
     vector<LU> input;
     Tree tree;
     int last_id = 0;
@@ -140,21 +105,12 @@ int main() {
     input.push_back(LU(endCh, -1, "BLA"));
     tree.sm[last_id] = endCh;
     last_id++;
-    // for (int i = 0; i < input.size(); i++) {
-    //     cout << input[i].sign << " " << input[i].row << " " <<
-    //     input[i].content
-    //          << " " << endl;
-    // }
-    // cout << last_id << endl;
     int crs = 0; // index of current readed input
     stack<LRI> st1;
     string qf = "\u2207";
     LRI l1(0, last_id, qf);
     tree.sm[last_id] = qf;
     last_id++;
-    // for (const auto &e : tree.sm) {
-    //     cout << e.first << " " << e.second << endl;
-    // }
     st1.push(l1);
     string red_color = "\033[31m";
     string green_color = "\033[32m";
@@ -225,9 +181,8 @@ int main() {
                 break;
             }
         } else {
-            cerr << red_color << "STACK " << tid << " " << tlrs << " " << ts
-                 << endl
-                 << "READ " << crs << " " << csign << reset << endl;
+            cerr << red_color << "ROW: " << crow << endl
+                 << "SIGN: " << csign << reset << endl;
             while (tab.syn.count(csign) == 0) {
                 crs++;
                 csign = input[crs].sign;
@@ -242,13 +197,6 @@ int main() {
         }
     }
     tree.root_id = st1.top().id;
-    // while (!st1.empty()) {
-    //     cout << st1.top().s << " " << st1.top().id << " " <<
-    //     st1.top().lrs
-    //          << endl;
-    //     st1.pop();
-    // }
-    // set<int> visited;
     stack<pair<int, int>> st2;
     st2.push({tree.root_id, 0});
     while (!st2.empty()) {
