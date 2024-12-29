@@ -1,11 +1,13 @@
-int f1(char a, char b) {
-    return a == b;
-}
-
-void f2(int x) {
-    return;
-}
-
-void f3(void) {
-    return;
+int main(void) {
+    int x = 3;
+    int z;
+    bla( a, b);
+    {
+        int x = 5;
+        int y = x + 1; // 6
+        z = y + 1; // 7
+    }
+    foo(a, b);
+    z = x + 1; // 4
+    return 0;
 }
