@@ -40,5 +40,11 @@ struct treeNode {
     map<string, Type> table;
     ~treeNode() { cerr << "treeNODE destroyed" << endl; }
 };
+struct Tree {
+    string node;
+    vector<shared_ptr<Tree>> children;
+    Tree(string node) : node(node) {}
+    ~Tree() { cerr << "input tree node destroyed" << endl; }
+};
 
 #endif // !GENSTRUCTS
