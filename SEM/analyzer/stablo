@@ -1,5 +1,5 @@
-<postfiks_izraz>
- <postfiks_izraz>
-  <primarni_izraz>
-   ZNAK a 4
- OP_INC 4 ++
+<SLOZENA_NAREDBA>
+ L_VIT_ZAGRADA 3 {
+ <lista_deklaracija>
+ <lista_naredbi>
+ D_ZAGRADA 4 }

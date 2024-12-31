@@ -34,13 +34,13 @@ struct Type {
     explicit Type(enum type type, bool lexp)
         : type(type), numElem(-1), lexp(lexp) {}
 };
-struct treeNode {
+struct treeNode { // tree for scopes
     shared_ptr<treeNode> parent;
     vector<shared_ptr<treeNode>> children;
     map<string, Type> table;
     ~treeNode() { cerr << "treeNODE destroyed" << endl; }
 };
-struct Tree {
+struct Tree { // tree for inputs
     string node;
     vector<shared_ptr<Tree>> children;
     Tree(string node) : node(node) {}

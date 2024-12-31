@@ -91,17 +91,6 @@ bool checkImp(type t1, type t2) {
     }
     return t1 == t2;
 }
-bool checkChar(string znak) {
-    if (znak.size() == 1)
-        return true;
-    if (znak.size() == 2) {
-        if (znak == "\\t" || znak == "\\n" || znak == "\\0" || znak == "\\'" ||
-            znak == "\\\"" || znak == "\\\\") {
-            return true;
-        }
-    }
-    return false;
-}
 void prodErr(const shared_ptr<Tree> &node) {
     cout << node->node << " ::=";
     for (const auto &child : node->children) {
@@ -162,15 +151,8 @@ Type PRIMARNI_IZRAZ(const shared_ptr<Tree> &node) {
             prodErr(node);
         }
     } else if (v[0] == "BROJ") {
-        long int vr = stol(v[2]);
-        long int donja = -2147483648, gornja = 214748364;
-        if (!(vr >= donja && vr <= gornja))
-            prodErr(node);
         return Type(Int, false);
     } else if (v[0] == "ZNAK") {
-        string znak = v[2];
-        if (!checkChar(znak))
-            prodErr(node);
         return Type(Char, false);
     } else if (v[0] == "NIZ_ZNAKOVA") {
         return Type(arrkchar, false);
@@ -879,77 +861,7 @@ type IZRAZ_NAREDBA(const shared_ptr<Tree> &node) {
     const vector<shared_ptr<Tree>> &u = node->children;
     int curr = 0;
     string ulaz = u[curr]->node;
-    vector<string> v = splitSpaces(ulaz);
-    if (v[0] == "TOCKAZAREZ") {
-        return Int;
-    } else if (v[0] == "<izraz>") {
-        Type t = IZRAZ(u[curr]);
-        curr++;
-        ulaz = u[curr]->node;
-        v = splitSpaces(ulaz);
-        if (v[0] != "TOCKAZAREZ")
-            errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA IZRAZ_NAREDBA 1");
-        return t.type;
-    }
     return Error;
-}
-
-void NAREDBA_GRANANJA(const shared_ptr<Tree> &node) {
-    const vector<shared_ptr<Tree>> &u = node->children;
-    int curr = 0;
-    string ulaz = u[curr]->node;
-    vector<string> v = splitSpaces(ulaz);
-    if (v[0] != "KR_IF")
-        errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA NAREDBA_GRANANJA 1");
-    curr++;
-    ulaz = u[curr]->node;
-    v = splitSpaces(ulaz);
-    if (v[0] != "L_ZAGRADA")
-        errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA NAREDBA_GRANANJA 2");
-    curr++;
-    ulaz = u[curr]->node;
-    if (ulaz != "<izraz>")
-        errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA NAREDBA_GRANANJA 3");
-    Type t = IZRAZ(u[curr]);
-    if (!checkImp(t.type, Int)) {
-        prodErr(node);
-    }
-    curr++;
-    ulaz = u[curr]->node;
-    v = splitSpaces(ulaz);
-    if (v[0] != "D_ZAGRADA")
-        errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA NAREDBA_GRANANJA 4");
-    if (u.size() == 5) {
-        curr++;
-        ulaz = u[curr]->node;
-        if (ulaz != "<naredba>")
-            errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA NAREDBA_GRANANJA 5");
-        NAREDBA(u[curr]);
-    } else if (u.size() > 5) {
-        curr++;
-        ulaz = u[curr]->node;
-        if (ulaz != "<naredba>")
-            errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA NAREDBA_GRANANJA 5");
-        NAREDBA(u[curr]);
-        curr++;
-        ulaz = u[curr]->node;
-        v = splitSpaces(ulaz);
-        if (v[0] != "KR_ELSE")
-            errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA NAREDBA_GRANANJA 6");
-        curr++;
-        ulaz = u[curr]->node;
-        if (ulaz != "<naredba>")
-            errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA NAREDBA_GRANANJA 5");
-        NAREDBA(u[curr]);
-    } else {
-        errPrint("KRIVO STABLO NAREDBA_GRANANJA");
-    }
-}
-
-void NAREDBA_PETLJE(const shared_ptr<Tree> &node) {
-    const vector<shared_ptr<Tree>> &u = node->children;
-    int curr = 0;
-    string ulaz = u[curr]->node;
 }
 
 Type test1() { return Type(Void, 2, 1); }
@@ -970,7 +882,7 @@ int main() {
     while (getline(cin, line)) {
         input.push_back(line);
     }
-    // root->children.push_back(make_shared<treeNode>());
+    root->children.push_back(make_shared<treeNode>());
     troot = build(input);
     printTree(troot, 0);
     SLOZENA_NAREDBA(troot);
