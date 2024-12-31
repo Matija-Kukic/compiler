@@ -113,6 +113,7 @@ vector<type> LISTA_ARGUMENATA(const shared_ptr<Tree> &node);
 Type CAST_IZRAZ(const shared_ptr<Tree> &node);
 type IME_TIPA(const shared_ptr<Tree> &node);
 type SPECIFIKATOR_TIPA(const shared_ptr<Tree> &node);
+Type IZRAZ_PRIDRUZIVANJA(const shared_ptr<Tree> &node);
 
 void errPrint(string message) {
     string redS = "\033[31m", redE = "\033[0m";
@@ -273,7 +274,6 @@ Type POSTFIKS_IZRAZ(const shared_ptr<Tree> &node) {
     }
     return Type(Error, false);
 }
-Type IZRAZ_PRIDRUZIVANJA(const shared_ptr<Tree> &node);
 vector<type> LISTA_ARGUMENATA(const shared_ptr<Tree> &node) {
     const vector<shared_ptr<Tree>> &u = node->children;
     int curr = 0;
