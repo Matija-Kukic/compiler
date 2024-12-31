@@ -264,7 +264,8 @@ Type POSTFIKS_IZRAZ(const shared_ptr<Tree> &node) {
             } else if (v2[0] == "<lista_argumenata>") {
                 vector<type> params = LISTA_ARGUMENATA(u[curr]);
                 int z = 0;
-                if (params.size() == t.fparam.size() && params.size() != 0) {
+                if (params.size() == t.fparam.size() && params.size() != 0 &&
+                    t.type == Func) {
                     for (int i = 0; i < params.size(); i++) {
                         if (params[i] == t.fparam[i] &&
                             checkImp(params[i], t.fparam[i]))
