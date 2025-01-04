@@ -203,8 +203,8 @@ Type PRIMARNI_IZRAZ(const shared_ptr<Tree> &node) {
             prodErr(node);
         }
     } else if (v[0] == "BROJ") {
-        long int vr = stol(v[2]);
-        long int donja = -2147483648, gornja = 214748364;
+        double vr = stod(v[2]);
+        double donja = -2147483648, gornja = 214748364;
         if (!(vr >= donja && vr <= gornja))
             prodErr(node);
         return Type(Int, false);
@@ -1619,10 +1619,10 @@ int main() {
     map<string, Type> &m = root->table;
     if (m.find("main") != m.end()) {
         if (!(m["main"].retyp == Int && m["main"].fparam.size() == 0)) {
-            cout << "main";
+            cout << "main" << endl;
         }
     } else {
-        cout << "main";
+        cout << "main" << endl;
     }
     for (const auto &e : m) {
         cerr << e.first << " " << e.second.type << " " << e.second.fparam.size()
