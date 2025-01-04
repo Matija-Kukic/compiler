@@ -168,7 +168,7 @@ Type IZRAZ_PRIDRUZIVANJA(const shared_ptr<Tree> &node);
 
 void errPrint(string message) {
     string redS = "\033[31m", redE = "\033[0m";
-    cerr << redS << message << redE << endl;
+    cout << redS << message << redE << endl;
     currScope.reset();
     destroyTree(troot);
     destroyTreeNode(root);
@@ -414,7 +414,7 @@ Type CAST_IZRAZ(const shared_ptr<Tree> &node) {
     vector<string> v = splitSpaces(ulaz);
     if (v[0] == "<unarni_izraz>") {
         return UNARNI_IZRAZ(u[curr]);
-    } else if (ulaz == "L_ZAGRADA") {
+    } else if (v[0] == "L_ZAGRADA") {
         curr++;
         ulaz = u[curr]->node;
         if (ulaz == "<ime_tipa>") {
@@ -440,7 +440,7 @@ Type CAST_IZRAZ(const shared_ptr<Tree> &node) {
                 errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA CAST_IZRAZ 2");
             }
         } else {
-            errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA CAST_IZRAZ 2");
+            errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA CAST_IZRAZ 4");
         }
     } else {
         errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA CAST_IZRAZ 1");
@@ -1098,23 +1098,18 @@ void NAREDBA_SKOKA(const shared_ptr<Tree> &node) {
         if (v[0] != "TOCKAZAREZ")
             errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA NAREDBBA_SKOKA 1");
     } else if (v[0] == "KR_RETURN") {
-        cerr << "KR_RETURN" << endl;
         // dovrsi kad napravis deklaracije al znas da ides po stablu scopeova
         // i trazis idn funkcije koja je deklarirana
         // i gledas njene tipove u skladu sa pravilima iz uputa
         shared_ptr<treeNode> ptr = currScope;
-        cerr << ptr->IDN << " GRESKA 3" << endl;
         while (ptr->IDN == "" && ptr != nullptr) {
             ptr = ptr->parent;
         }
-        cerr << "GRESKA 4" << endl;
         if (ptr == nullptr)
             prodErr(node);
         string name = ptr->IDN;
         ptr = ptr->parent;
-        cerr << "GRESKA 2" << endl;
         map<string, Type> &m = ptr->table;
-        cerr << ptr << " " << name << " GRESKA 6" << endl;
         if (ptr == nullptr) {
             errPrint("NULLPTR");
         }
@@ -1452,8 +1447,8 @@ void INIT_DEKLARATOR(const shared_ptr<Tree> &node, type nt) {
 }
 
 Type IZRAVNI_DEKLARATOR(const shared_ptr<Tree> &node, type nt) {
-    cerr << "U IZRAVNI_DEKLARATOR" << endl;
     const vector<shared_ptr<Tree>> &u = node->children;
+    cerr << "U IZRAVNI_DEKLARATOR " << u.size() << endl;
     int curr = 0;
     string ulaz = u[curr]->node;
     vector<string> v = splitSpaces(ulaz);
@@ -1471,7 +1466,8 @@ Type IZRAVNI_DEKLARATOR(const shared_ptr<Tree> &node, type nt) {
     } else if (u.size() == 4) {
         curr += 2;
         ulaz = u[curr]->node;
-        if (ulaz == "BROJ") {
+        v = splitSpaces(ulaz);
+        if (v[0] == "BROJ") {
             if (nt == Void)
                 prodErr(node);
             if (m.find(name) != m.end())
@@ -1491,15 +1487,17 @@ Type IZRAVNI_DEKLARATOR(const shared_ptr<Tree> &node, type nt) {
                 newt = arrkchar;
             m[name] = Type(newt, val, true);
             return m[name];
-        } else if (ulaz == "KR_VOID") {
+        } else if (v[0] == "KR_VOID") {
+            cerr << "OVDJE U IZRAVNOM DEKLARATORU" << endl;
             if (m.find(name) != m.end()) {
                 if (!(m[name].fparam.size() == 0 && m[name].retyp == nt))
                     prodErr(node);
             } else {
-                m[name] = Type(Func, nt);
+                cerr << "RADIM NOVU FUNC";
+                m[name] = Type(Func, nt, false);
             }
             return m[name];
-        } else if (ulaz == "<lista_parametara>") {
+        } else if (v[0] == "<lista_parametara>") {
             int z = 0;
             Lparam l = LISTA_PARAMETARA(u[curr]);
             vector<type> &types = l.fparam;
@@ -1578,6 +1576,32 @@ Inistruct INICIJALIZATOR(const shared_ptr<Tree> &node) {
     return Inistruct(Error, vector<type>(), -1);
 }
 
+bool checkFunc(const shared_ptr<treeNode> &node) {
+    const vector<shared_ptr<treeNode>> &u = node->children;
+    cerr << "U CHECKU" << endl;
+    bool ret = true;
+    if (!u.empty()) {
+        for (int i = 0; i < u.size(); i++) {
+            if (!checkFunc(u[i]))
+                return false;
+        }
+    }
+    for (const auto &e : node->table) {
+        if (e.second.type == Func) {
+            string name = e.first;
+            map<string, Type> &m = root->table;
+            if (m.find(name) != m.end()) {
+                if (!m[name].fundef)
+                    ret = false;
+            } else {
+                ret = false;
+            }
+        }
+        cerr << "FUNC DEBUG " << ret << " " << e.first << endl;
+    }
+    return ret;
+}
+
 Type test1() { return Type(Void, 2, 1); }
 Type test() { return test1(); }
 
@@ -1592,19 +1616,20 @@ int main() {
     // printTree(troot, 0);
     PRIJEVODNA_JEDINICA(troot);
     cerr << "FINISHED REK" << endl;
-    //  map<string, Type> &m = root->table;
-    //  if (m.find("main") != m.end()) {
-    //      if (!(m["main"].retyp == Int && m["main"].fparam.size() == 0)) {
-    //          cout << "main";
-    //      }
-    //  } else {
-    //      cout << "main";
-    //  }
-    //   for (const auto &e : m) {
-    //      cerr << e.first << " " << e.second.type << " " <<
-    //      e.second.fparam.size()
-    //           << endl;
-    //  }
+    map<string, Type> &m = root->table;
+    if (m.find("main") != m.end()) {
+        if (!(m["main"].retyp == Int && m["main"].fparam.size() == 0)) {
+            cout << "main";
+        }
+    } else {
+        cout << "main";
+    }
+    for (const auto &e : m) {
+        cerr << e.first << " " << e.second.type << " " << e.second.fparam.size()
+             << endl;
+    }
+    if (!checkFunc(root))
+        cout << "funkcija" << endl;
     destroyTree(troot);
     destroyTreeNode(root);
     cerr << endl << "FINISH" << endl;

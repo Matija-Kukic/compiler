@@ -1,4 +1,5 @@
 PRIJEVODNA_JEDINICA
+PRIJEVODNA_JEDINICA
 VANJSKA_DEKLARACIJA <definicija_funkcije>
 VANJSKA_2
 BLA
@@ -13,14 +14,15 @@ U DEKLARACIJA
 U IME TIPA
 U SPECIFIKATOR TIPA
 U LISTA INIT DEKLARATORA
+U INIT DEKLARATOR
+U IZRAVNI_DEKLARATOR 4
+OVDJE U IZRAVNOM DEKLARATORU
+RADIM NOVU FUNCU DEKLARACIJA
+U IME TIPA
+U SPECIFIKATOR TIPA
 U LISTA INIT DEKLARATORA
 U INIT DEKLARATOR
-U IZRAVNI_DEKLARATOR
-U INICIJALIZATOR
-U IZRAZ_PRIDRUZIVANJA
-U PRIMARNI IZRAZ
-U INIT DEKLARATOR
-U IZRAVNI_DEKLARATOR
+U IZRAVNI_DEKLARATOR 1
 U INICIJALIZATOR
 U IZRAZ_PRIDRUZIVANJA
 U PRIMARNI IZRAZ
@@ -29,16 +31,46 @@ U IME TIPA
 U SPECIFIKATOR TIPA
 U LISTA INIT DEKLARATORA
 U INIT DEKLARATOR
-U IZRAVNI_DEKLARATOR
+U IZRAVNI_DEKLARATOR 1
 U INICIJALIZATOR
 U IZRAZ_PRIDRUZIVANJA
 U PRIMARNI IZRAZ
-U DEKLARACIJA
+U LISTA NAREDBI
+U LISTA NAREDBI
+U IZRAZ
+U IZRAZ_PRIDRUZIVANJA
+U PRIMARNI IZRAZ
+U IZRAZ_PRIDRUZIVANJA
 U IME TIPA
 U SPECIFIKATOR TIPA
-U LISTA INIT DEKLARATORA
-U INIT DEKLARATOR
-U IZRAVNI_DEKLARATOR
+U PRIMARNI IZRAZ
+U NAREDBA_SKOKA
+U IZRAZ
+U IZRAZ_PRIDRUZIVANJA
+U PRIMARNI IZRAZ
+VANJSKA_DEKLARACIJA <definicija_funkcije>
+VANJSKA_2
+BLA
+U IME TIPA
+U SPECIFIKATOR TIPA
+f 100 10 1
+U SLOZENA_NAREDBA
+U LISTA NAREDBI
+U NAREDBA_SKOKA
+U IZRAZ
+U IZRAZ_PRIDRUZIVANJA
+U PRIMARNI IZRAZ
+FINISHED REK
+f 100 0
+main 100 0
+U CHECKU
+U CHECKU
+FUNC DEBUG 1 a
+FUNC DEBUG 1 c
+FUNC DEBUG 1 f
+U CHECKU
+FUNC DEBUG 1 f
+FUNC DEBUG 1 main
 input tree node destroyed
 input tree node destroyed
 input tree node destroyed
@@ -176,4 +208,40 @@ input tree node destroyed
 input tree node destroyed
 input tree node destroyed
 input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+input tree node destroyed
+treeNODE destroyed
+treeNODE destroyed
+
+FINISH
 treeNODE destroyed
