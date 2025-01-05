@@ -132,15 +132,23 @@ bool checkChar(string znak) {
     }
     return false;
 }
-bool checkString(string niz) {
+int checkString(string niz) {
+    int z = 0;
     for (int i = 1; i < niz.size() - 1; i++) {
         if (niz[i] == '\\') {
             if (niz[i + 1] != 't' || niz[i + 1] != 'n' || niz[i + 1] != '0' ||
-                niz[i + 1] != '\\' || niz[i + 1] != '\"' || niz[i + 1] != '\'')
-                return false;
+                niz[i + 1] != '\\' || niz[i + 1] != '\"' ||
+                niz[i + 1] != '\'') {
+                return -1;
+            } else {
+                i++;
+                z++;
+            }
+        } else {
+            z++;
         }
     }
-    return true;
+    return z;
 }
 void prodErr(const shared_ptr<Tree> &node) {
     cout << node->node << " ::=";
@@ -215,9 +223,10 @@ Type PRIMARNI_IZRAZ(const shared_ptr<Tree> &node) {
             prodErr(node);
         return Type(Char, false);
     } else if (v[0] == "NIZ_ZNAKOVA") {
-        if (!checkString(v[2]))
+        int z = checkString(v[2]);
+        if (z == -1)
             prodErr(node);
-        return Type(arrkchar, v[2].size() - 2, false);
+        return Type(arrkchar, z, false);
     } else if (v[0] == "L_ZAGRADA") {
         // kasnije dovrsi ova produkcija je
         // L_ZAGRADA <izraz> D_ZAGRADA
@@ -301,6 +310,7 @@ Type POSTFIKS_IZRAZ(const shared_ptr<Tree> &node) {
             vector v2 = splitSpaces(ulaz);
             if (v2[0] == "D_ZAGRADA") {
                 if (t.type == Func && t.fparam.size() == 0) {
+                    cerr << "DEBUG POSTFIKS_IZRAZ" << t.fparam.size();
                     return Type(t.retyp, false);
                 } else {
                     prodErr(node);
@@ -311,15 +321,19 @@ Type POSTFIKS_IZRAZ(const shared_ptr<Tree> &node) {
                 if (params.size() == t.fparam.size() && params.size() != 0 &&
                     t.type == Func) {
                     for (int i = 0; i < params.size(); i++) {
-                        if (params[i] == t.fparam[i] &&
-                            checkImp(params[i], t.fparam[i]))
-                            // dovrsi checkImp
+                        if (params[i] == t.fparam[i] ||
+                            checkImp(params[i], t.fparam[i])) {
                             z++;
+                        }
+                        cerr << "PARAM CHECK" << params[i] << " " << t.fparam[i]
+                             << endl;
                     }
                 }
                 if (z == params.size()) {
                     return Type(t.retyp, false);
                 } else {
+                    cerr << z << " " << params.size() << " " << t.fparam.size()
+                         << endl;
                     prodErr(node);
                 }
             }
@@ -349,7 +363,8 @@ vector<type> LISTA_ARGUMENATA(const shared_ptr<Tree> &node) {
         vector<type> v = LISTA_ARGUMENATA(u[curr]);
         curr++;
         ulaz = u[curr]->node;
-        if (ulaz != "ZAREZ") {
+        vector<string> uu = splitSpaces(ulaz);
+        if (uu[0] != "ZAREZ") {
             errPrint("KRIVI ULAZ ZNAKOVA GRAMATIKE 1 LISTA ARG");
         }
         curr++;
@@ -372,10 +387,11 @@ Type UNARNI_IZRAZ(const shared_ptr<Tree> &node) {
     const vector<shared_ptr<Tree>> &u = node->children;
     int curr = 0;
     string ulaz = u[curr]->node;
-    if (ulaz == "<postfiks_izraz>") {
+    vector<string> v = splitSpaces(ulaz);
+    if (v[0] == "<postfiks_izraz>") {
         Type t = POSTFIKS_IZRAZ(u[curr]);
         return t;
-    } else if (ulaz == "OP_INC" || ulaz == "OP_DEC") {
+    } else if (v[0] == "OP_INC" || v[0] == "OP_DEC") {
         curr++;
         ulaz = u[curr]->node;
         if (ulaz == "<unarni_izraz>") {
@@ -388,7 +404,7 @@ Type UNARNI_IZRAZ(const shared_ptr<Tree> &node) {
         } else {
             errPrint("KRIVI ULAZ ZNAKOVA 1 UNARNI IZRAZ");
         }
-    } else if (ulaz == "<unarni_operator>") {
+    } else if (v[0] == "<unarni_operator>") {
         curr++;
         ulaz = u[curr]->node;
         if (ulaz == "<cast_izraz>") {
@@ -420,6 +436,7 @@ Type CAST_IZRAZ(const shared_ptr<Tree> &node) {
         if (ulaz == "<ime_tipa>") {
             type t = IME_TIPA(u[curr]);
             if (!(t == Int || t == kint || t == Char || t == kchar)) {
+                cerr << "PRVI ERR NODE U CAST IZRAZ" << endl;
                 prodErr(node);
             }
             curr++;
@@ -431,9 +448,14 @@ Type CAST_IZRAZ(const shared_ptr<Tree> &node) {
             ulaz = u[curr]->node;
             if (ulaz == "<cast_izraz>") {
                 Type t2 = CAST_IZRAZ(u[curr]);
-                if (checkImp(t2.type, t) || (t2.type == Int && t == Char)) {
+                if (checkImp(t2.type, t) || (t2.type == Int && t == Char) ||
+                    (t2.type == Int && t == kchar) ||
+                    (t2.type == kint && t == kchar) ||
+                    (t2.type == kint && t == Char)) {
                     return Type(t, false);
                 } else {
+                    cerr << "DRUGI ERR NODE U CAST IZRAZ" << t << " " << t2.type
+                         << endl;
                     prodErr(node);
                 }
             } else {
@@ -481,16 +503,18 @@ type IME_TIPA(const shared_ptr<Tree> &node) {
     return Error;
 }
 type SPECIFIKATOR_TIPA(const shared_ptr<Tree> &node) {
-    cerr << "U SPECIFIKATOR TIPA" << endl;
     const vector<shared_ptr<Tree>> &u = node->children;
+    cerr << "U SPECIFIKATOR TIPA " << u.size() << endl;
     int curr = 0;
     string ulaz = u[curr]->node;
     vector<string> v = splitSpaces(ulaz);
+    cerr << v[0] << endl;
     if (v[0] == "KR_VOID") {
         return Void;
     } else if (v[0] == "KR_CHAR") {
         return Char;
     } else if (v[0] == "KR_INT") {
+        cerr << "BLA" << endl;
         return Int;
     } else {
         errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA SPECIFIKATOR_TIPA 1");
@@ -533,8 +557,6 @@ Type ADITIVNI_IZRAZ(const shared_ptr<Tree> &node) {
         return MULTIPLIKATIVNI_IZRAZ(u[curr]);
     } else if (ulaz == "<aditivni_izraz>") {
         Type t = ADITIVNI_IZRAZ(u[curr]);
-        curr++;
-        ulaz = u[curr]->node;
         if (!checkImp(t.type, Int)) {
             prodErr(node);
         }
@@ -1085,7 +1107,7 @@ void NAREDBA_SKOKA(const shared_ptr<Tree> &node) {
     vector<string> v = splitSpaces(ulaz);
     if (v[0] == "KR_CONTINUE" || v[0] == "KR_BREAK") {
         shared_ptr<Tree> ptr = node;
-        while (ptr != nullptr || ptr->node == "<naredba_petlje>")
+        while (ptr != nullptr && ptr->node != "<naredba_petlje>")
             ptr = ptr->parent;
         if (ptr == nullptr) {
             ptr.reset();
@@ -1233,12 +1255,14 @@ void DEFINICIJA_FUNKCIJE(const shared_ptr<Tree> &node) {
             errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA DEFINICIJA_FUNKCIJE 5");
         SLOZENA_NAREDBA(u[curr], vector<string>(), vector<type>(), name);
     } else if (v[0] == "<lista_parametara>") {
-        map<string, Type> &m = ptr->table;
         int z = 0;
         Lparam l = LISTA_PARAMETARA(u[curr]);
         vector<type> &types = l.fparam;
+        cerr << "IMAM LISTU PARAMETARA" << endl;
         if (m.find(name) != m.end()) {
+            cerr << "BLA2" << endl;
             Type &f = m[name];
+            cerr << "BLA" << endl;
             if (m[name].fundef) {
                 ptr.reset();
                 errPrint("FUNKCIJA JE VEC DEKLARIRANA IL JE KRIVI TIP NA IDN");
@@ -1254,7 +1278,9 @@ void DEFINICIJA_FUNKCIJE(const shared_ptr<Tree> &node) {
                 prodErr(node);
             }
         }
+        cerr << "ZAVRSIO PROVJERU DEKLARACIJE I DEFINICIJE" << endl;
         m[name] = Type(Func, l.fparam, l.nparam, t, true);
+        cerr << "ZAVRSIO PROVJERU DEKLARACIJE I DEFINICIJE 2" << endl;
         ptr.reset();
         curr++;
         ulaz = u[curr]->node;
@@ -1275,6 +1301,7 @@ void DEFINICIJA_FUNKCIJE(const shared_ptr<Tree> &node) {
 pair<string, type> DEKLARACIJA_PARAMETRA(const shared_ptr<Tree> &node);
 
 Lparam LISTA_PARAMETARA(const shared_ptr<Tree> &node) {
+    cerr << "U LISTA_PARAMETARA" << endl;
     const vector<shared_ptr<Tree>> &u = node->children;
     int curr = 0;
     string ulaz = u[curr]->node;
@@ -1283,6 +1310,7 @@ Lparam LISTA_PARAMETARA(const shared_ptr<Tree> &node) {
         pair<string, type> p = DEKLARACIJA_PARAMETRA(u[curr]);
         ret.nparam.push_back(p.first);
         ret.fparam.push_back(p.second);
+        cerr << "LISTA_PARAMETERA RET NAMJESTEN" << endl;
     } else if (ulaz == "<lista_parametara>") {
         ret = LISTA_PARAMETARA(u[curr]);
         curr++;
@@ -1295,7 +1323,7 @@ Lparam LISTA_PARAMETARA(const shared_ptr<Tree> &node) {
         if (ulaz != "<deklaracija_parametra>")
             errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA LISTA_PARAMETARA 2");
         pair<string, type> p = DEKLARACIJA_PARAMETRA(u[curr]);
-        if (find(ret.nparam.begin(), ret.nparam.end(), p.first) ==
+        if (find(ret.nparam.begin(), ret.nparam.end(), p.first) !=
             ret.nparam.end()) {
             prodErr(node);
         }
@@ -1304,12 +1332,14 @@ Lparam LISTA_PARAMETARA(const shared_ptr<Tree> &node) {
     } else {
         errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA LISTA_PARAMETARA 3");
     }
+    cerr << "VRACAM LISTU PARAMETARA" << endl;
     return ret;
 }
 pair<string, type> DEKLARACIJA_PARAMETRA(const shared_ptr<Tree> &node) {
     const vector<shared_ptr<Tree>> &u = node->children;
     int curr = 0;
     string ulaz = u[curr]->node;
+    cerr << "U DEKLARACIJA_PARAMETRA " << u.size() << endl;
     if (ulaz != "<ime_tipa>")
         errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA DEKLARACIJA_PARAMETRA 1");
     type t = IME_TIPA(u[curr]);
@@ -1321,6 +1351,7 @@ pair<string, type> DEKLARACIJA_PARAMETRA(const shared_ptr<Tree> &node) {
     if (v[0] != "IDN")
         errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA DEKLARACIJA_PARAMETRA 2");
     string name = v[2];
+    cerr << "TU SAM SAD" << endl;
     if (u.size() == 4) {
         if (t == Int) {
             t = arrint;
@@ -1426,11 +1457,13 @@ void INIT_DEKLARATOR(const shared_ptr<Tree> &node, type nt) {
         Inistruct t2 = INICIJALIZATOR(u[curr]);
         if (t.type == Int || t.type == Char || t.type == kint ||
             t.type == kchar) {
-            if (!(checkImp(t.type, Int) || checkImp(t.type, Char)))
+            if (!(checkImp(t2.type, t.type)))
                 prodErr(node);
         } else if (t.type == arrint || t.type == arrchar || t.type == arrkint ||
                    t.type == arrkchar) {
             if (t2.numElem <= t.numElem) {
+                cerr << "INIT DEKLARATOR DEBUG " << t.numElem << " "
+                     << t2.numElem << endl;
                 for (int i = 0; i < t2.numElem; i++) {
                     if (t.type == arrint || t.type == arrkint) {
                         if (!checkImp(t2.types[i], Int))
@@ -1441,7 +1474,11 @@ void INIT_DEKLARATOR(const shared_ptr<Tree> &node, type nt) {
                             prodErr(node);
                     }
                 }
+            } else {
+                prodErr(node);
             }
+        } else {
+            prodErr(node);
         }
     }
 }
@@ -1528,11 +1565,11 @@ Inistruct LISTA_IZRAZA_PRIDRUZIVANJA(const shared_ptr<Tree> &node) {
     int curr = 0;
     string ulaz = u[curr]->node;
     if (ulaz == "<izraz_pridruzivanja>") {
-        Type t = IZRAZ_PRIDRUZIVANJA(node);
+        Type t = IZRAZ_PRIDRUZIVANJA(u[curr]);
         vector<type> typ;
         typ.push_back(t.type);
         return Inistruct(List, typ, 1);
-    } else if (ulaz == "<list_izraza_pridruzivanja>") {
+    } else if (ulaz == "<lista_izraza_pridruzivanja>") {
         Inistruct in = LISTA_IZRAZA_PRIDRUZIVANJA(u[curr]);
         curr += 2;
         ulaz = u[curr]->node;
@@ -1555,7 +1592,7 @@ Inistruct INICIJALIZATOR(const shared_ptr<Tree> &node) {
         Type t = IZRAZ_PRIDRUZIVANJA(u[curr]);
         if (t.type == arrkchar) {
             vector<type> list;
-            for (int i = 0; i < t.numElem; i++)
+            for (int i = 0; i < t.numElem + 1; i++)
                 list.push_back(Char);
             return Inistruct(List, list, t.numElem + 1);
         } else {
@@ -1565,11 +1602,6 @@ Inistruct INICIJALIZATOR(const shared_ptr<Tree> &node) {
         curr++;
         ulaz = u[curr]->node;
         Inistruct in = LISTA_IZRAZA_PRIDRUZIVANJA(u[curr]);
-        curr += 2;
-        ulaz = u[curr]->node;
-        Type t = IZRAZ_PRIDRUZIVANJA(u[curr]);
-        in.numElem++;
-        in.types.push_back(t.type);
         return in;
     }
 
@@ -1591,8 +1623,19 @@ bool checkFunc(const shared_ptr<treeNode> &node) {
             string name = e.first;
             map<string, Type> &m = root->table;
             if (m.find(name) != m.end()) {
-                if (!m[name].fundef)
-                    ret = false;
+                if (!m[name].fundef || m[name].retyp != e.second.retyp ||
+                    m[name].fparam.size() != e.second.fparam.size()) {
+                    return false;
+                }
+                if (m[name].fparam.size() > 0) {
+                    vector<type> f1 = m[name].fparam, f2 = e.second.fparam;
+                    int z = 1;
+                    for (int i = 0; i < f1.size(); i++)
+                        if (f1[i] != f2[i])
+                            z = 0;
+                    if (!z)
+                        return false;
+                }
             } else {
                 ret = false;
             }

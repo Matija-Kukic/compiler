@@ -3,54 +3,44 @@ VANJSKA_DEKLARACIJA <definicija_funkcije>
 VANJSKA_2
 BLA
 U IME TIPA
-U SPECIFIKATOR TIPA
-main 100 20 1
+U SPECIFIKATOR TIPA 1
+KR_INT
+BLA
+main 100 10 1
 U SLOZENA_NAREDBA
-U LISTA NAREDBI
-U NAREDBA_SKOKA
-U IZRAZ
+U LISTA_DEKLARACIJA
+U LISTA_DEKLARACIJA
+U LISTA_DEKLARACIJA
+U DEKLARACIJA
+U IME TIPA
+U SPECIFIKATOR TIPA 1
+KR_CHAR
+U LISTA INIT DEKLARATORA
+U INIT DEKLARATOR
+U IZRAVNI_DEKLARATOR 4
+U INICIJALIZATOR
 U IZRAZ_PRIDRUZIVANJA
 U PRIMARNI IZRAZ
-FINISHED REK
-main 100 0
-U CHECKU
-U CHECKU
-FUNC DEBUG 1 main
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-input tree node destroyed
-treeNODE destroyed
-
-FINISH
-treeNODE destroyed
+INIT DEKLARATOR DEBUG 5 4
+U DEKLARACIJA
+U IME TIPA
+U SPECIFIKATOR TIPA 1
+KR_CHAR
+U LISTA INIT DEKLARATORA
+U INIT DEKLARATOR
+U IZRAVNI_DEKLARATOR 4
+U INICIJALIZATOR
+U IZRAZ_PRIDRUZIVANJA
+U PRIMARNI IZRAZ
+U IZRAZ_PRIDRUZIVANJA
+U PRIMARNI IZRAZ
+U IZRAZ_PRIDRUZIVANJA
+U PRIMARNI IZRAZ
+INIT DEKLARATOR DEBUG 5 3
+U DEKLARACIJA
+U IME TIPA
+U SPECIFIKATOR TIPA 1
+KR_CHAR
+U LISTA INIT DEKLARATORA
+U INIT DEKLARATOR
+U IZRAVNI_DEKLARATOR 4

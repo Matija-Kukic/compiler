@@ -63,7 +63,7 @@ struct treeNode { // tree for scopes
     vector<shared_ptr<treeNode>> children;
     map<string, Type> table;
     string IDN;
-    ~treeNode() { cerr << "treeNODE destroyed" << endl; }
+    //~treeNode() { cerr << "treeNODE destroyed" << endl; }
 };
 struct Tree { // tree for inputs
     string node;
@@ -71,7 +71,7 @@ struct Tree { // tree for inputs
     shared_ptr<Tree> parent;
     Tree(string node) : node(node) {}
     Tree() : node("") {}
-    ~Tree() { cerr << "input tree node destroyed" << endl; }
+    //~Tree() { cerr << "input tree node destroyed" << endl; }
 };
 
 #endif // !GENSTRUCTS
