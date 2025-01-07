@@ -1,6 +1,7 @@
 import os
 import subprocess
 
+
 RESET = "\033[0m"
 YELLOW = "\033[33m"
 ORANGE = "\033[38;5;214m"
@@ -11,16 +12,16 @@ GREEN = "\033[32m"
 semdir = input("Unesit ime direktorija gdje vam je kod: ")
 
 cwd = os.getcwd()
-test = cwd + "/integration"
+test = cwd + "/integration3"
 os.chdir(test)
 items = os.listdir()
 os.chdir(cwd)
 ts, cr = 0, 0
-for it in items:
+for it in sorted(items):
     ts += 1
     print(BLUE + f"TESTING {it}" + RESET)
-    subprocess.run(["cp", "integration/" + it + "/test.in", semdir + "/"])
-    subprocess.run(["cp", "integration/" + it + "/test.out", semdir + "/"])
+    subprocess.run(["cp", "integration3/" + it + "/test.in", semdir + "/"])
+    subprocess.run(["cp", "integration3/" + it + "/test.out", semdir + "/"])
     nd = cwd + "/" + semdir
     os.chdir(nd)
     file = open("test.in", "r")
@@ -33,12 +34,13 @@ for it in items:
     out = subprocess.run(
         ["diff", "izlaz.txt", "test.out"], text=True, capture_output=True
     )
+    print(out.stdout)
     if out.stdout == "":
         print(GREEN + f"TEST {it} PASSED" + RESET)
         cr += 1
     else:
         print(RED + f"TEST {it} FAILED" + RESET)
-        break
+        #break
     subprocess.run(["rm", "izlaz.txt"])
     subprocess.run(["rm", "test.out"])
     subprocess.run(["rm", "test.in"])

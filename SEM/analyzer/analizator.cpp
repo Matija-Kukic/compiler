@@ -93,7 +93,24 @@ void printTree(const shared_ptr<Tree> &node, int depth) {
         printTree(child, depth + 1);
     }
 }
-
+bool checkStrArr(const shared_ptr<Tree> &node) {
+    bool z = 0;
+    cerr << "BLA BLA CHECK STRARR" << endl;
+    const vector<shared_ptr<Tree>> &u = node->children;
+    if (u.size() > 0) {
+        for (int i = 0; i < u.size(); i++) {
+            if (checkStrArr(u[i])) {
+                z = 1;
+            }
+        }
+    }
+    vector<string> ulaz = splitSpaces(node->node);
+    cerr << "CHECK STRARR DEBUG " << ulaz[0] << endl;
+    if (ulaz[0] == "NIZ_ZNAKOVA") {
+        return true;
+    }
+    return z;
+}
 bool checkImp(type t1, type t2) {
     if (t1 == kint) {
         if (t2 == Int)
@@ -102,7 +119,7 @@ bool checkImp(type t1, type t2) {
         if (t2 == Int || t2 == Char || t2 == kint)
             return true;
     } else if (t1 == Char) {
-        if (t2 == Int) {
+        if (t2 == Int || t2 == kint) {
             return true;
         } else if (t2 == kchar) {
             return true;
@@ -888,7 +905,7 @@ void SLOZENA_NAREDBA(const shared_ptr<Tree> &node, const vector<string> &names,
     currScope = newScope;
     if (!names.empty()) {
         for (int i = 0; i < names.size(); i++) {
-            currScope->table[names[i]] = Type(types[i], false);
+            currScope->table[names[i]] = Type(types[i], true);
         }
     }
     if (v[0] == "L_VIT_ZAGRADA") {
@@ -1459,19 +1476,24 @@ void INIT_DEKLARATOR(const shared_ptr<Tree> &node, type nt) {
             t.type == kchar) {
             if (!(checkImp(t2.type, t.type)))
                 prodErr(node);
-        } else if (t.type == arrint || t.type == arrchar || t.type == arrkint ||
-                   t.type == arrkchar) {
+        } else if ((t.type == arrint || t.type == arrchar ||
+                    t.type == arrkint || t.type == arrkchar) &&
+                   t2.numElem != -1) {
             if (t2.numElem <= t.numElem) {
                 cerr << "INIT DEKLARATOR DEBUG " << t.numElem << " "
                      << t2.numElem << endl;
                 for (int i = 0; i < t2.numElem; i++) {
                     if (t.type == arrint || t.type == arrkint) {
-                        if (!checkImp(t2.types[i], Int))
+                        if (!checkImp(t2.types[i], Int)) {
+                            cerr << "INIT DEKL ERR 1";
                             prodErr(node);
+                        }
                     }
                     if (t.type == arrchar || t.type == arrkchar) {
-                        if (!checkImp(t2.types[i], Char))
+                        if (!checkImp(t2.types[i], Char)) {
+                            cerr << "INIT DEKL ERR 1";
                             prodErr(node);
+                        }
                     }
                 }
             } else {
@@ -1590,7 +1612,7 @@ Inistruct INICIJALIZATOR(const shared_ptr<Tree> &node) {
     string ulaz = u[curr]->node;
     if (ulaz == "<izraz_pridruzivanja>") {
         Type t = IZRAZ_PRIDRUZIVANJA(u[curr]);
-        if (t.type == arrkchar) {
+        if (checkStrArr(u[curr])) {
             vector<type> list;
             for (int i = 0; i < t.numElem + 1; i++)
                 list.push_back(Char);
