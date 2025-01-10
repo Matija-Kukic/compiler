@@ -228,10 +228,11 @@ Type PRIMARNI_IZRAZ(const shared_ptr<Tree> &node) {
             prodErr(node);
         }
     } else if (v[0] == "BROJ") {
-        double vr = stod(v[2]);
-        double donja = -2147483648, gornja = 214748364;
-        if (!(vr >= donja && vr <= gornja))
+        try {
+            int vr = stoi(v[2]);
+        } catch (const out_of_range &e) {
             prodErr(node);
+        }
         return Type(Int, false);
     } else if (v[0] == "ZNAK") {
         string znak = v[2];
