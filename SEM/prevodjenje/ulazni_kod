@@ -1,5 +1,4 @@
 int main (void) {
-    int b = 2147483647;
-    b--;
+    int a = 0xDD;
     return 0;
 }
