@@ -1,10 +1,5 @@
 int main (void) {
-    int f(void);
-    int a = f();
-    char c = 'b';
-    c = (char)12;
+    int b = -2147483648;
+    b--;
     return 0;
-}
-int f(void) {
-    return 2;
 }
