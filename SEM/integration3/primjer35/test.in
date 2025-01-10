@@ -19,9 +19,6 @@
        <init_deklarator>
         <izravni_deklarator>
          IDN 2 c
-         L_UGL_ZAGRADA 2 [
-         BROJ 2 10
-         D_UGL_ZAGRADA 2 ]
         OP_PRIDRUZI 2 =
         <inicijalizator>
          <izraz_pridruzivanja>
@@ -35,10 +32,16 @@
                  <aditivni_izraz>
                   <multiplikativni_izraz>
                    <cast_izraz>
-                    <unarni_izraz>
-                     <postfiks_izraz>
-                      <primarni_izraz>
-                       NIZ_ZNAKOVA 2 ""
+                    L_ZAGRADA 2 (
+                    <ime_tipa>
+                     <specifikator_tipa>
+                      KR_CHAR 2 char
+                    D_ZAGRADA 2 )
+                    <cast_izraz>
+                     <unarni_izraz>
+                      <postfiks_izraz>
+                       <primarni_izraz>
+                        BROJ 2 5
       TOCKAZAREZ 2 ;
     <lista_naredbi>
      <naredba>

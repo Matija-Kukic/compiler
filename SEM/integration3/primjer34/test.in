@@ -14,14 +14,11 @@
      <deklaracija>
       <ime_tipa>
        <specifikator_tipa>
-        KR_CHAR 2 char
+        KR_INT 2 int
       <lista_init_deklaratora>
        <init_deklarator>
         <izravni_deklarator>
-         IDN 2 c
-         L_UGL_ZAGRADA 2 [
-         BROJ 2 10
-         D_UGL_ZAGRADA 2 ]
+         IDN 2 b
         OP_PRIDRUZI 2 =
         <inicijalizator>
          <izraz_pridruzivanja>
@@ -36,14 +33,40 @@
                   <multiplikativni_izraz>
                    <cast_izraz>
                     <unarni_izraz>
-                     <postfiks_izraz>
-                      <primarni_izraz>
-                       NIZ_ZNAKOVA 2 ""
+                     <unarni_operator>
+                      MINUS 2 -
+                     <cast_izraz>
+                      <unarni_izraz>
+                       <postfiks_izraz>
+                        <primarni_izraz>
+                         BROJ 2 2147483648
       TOCKAZAREZ 2 ;
     <lista_naredbi>
+     <lista_naredbi>
+      <naredba>
+       <izraz_naredba>
+        <izraz>
+         <izraz_pridruzivanja>
+          <log_ili_izraz>
+           <log_i_izraz>
+            <bin_ili_izraz>
+             <bin_xili_izraz>
+              <bin_i_izraz>
+               <jednakosni_izraz>
+                <odnosni_izraz>
+                 <aditivni_izraz>
+                  <multiplikativni_izraz>
+                   <cast_izraz>
+                    <unarni_izraz>
+                     <postfiks_izraz>
+                      <postfiks_izraz>
+                       <primarni_izraz>
+                        IDN 3 b
+                      OP_DEC 3 --
+        TOCKAZAREZ 3 ;
      <naredba>
       <naredba_skoka>
-       KR_RETURN 3 return
+       KR_RETURN 4 return
        <izraz>
         <izraz_pridruzivanja>
          <log_ili_izraz>
@@ -59,6 +82,6 @@
                    <unarni_izraz>
                     <postfiks_izraz>
                      <primarni_izraz>
-                      BROJ 3 0
-       TOCKAZAREZ 3 ;
-    D_VIT_ZAGRADA 4 }
+                      BROJ 4 0
+       TOCKAZAREZ 4 ;
+    D_VIT_ZAGRADA 5 }

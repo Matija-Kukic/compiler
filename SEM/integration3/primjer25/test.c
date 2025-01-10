@@ -1,5 +1,5 @@
 int main(void) {
-    const char c[5] = {'c', 'd', 'b', 'd', 'd', 'h'};
-    int a = 0;
+    char c[10] = "";
+    const char d[10] = {'a', 'b'};
     return 0;
 }

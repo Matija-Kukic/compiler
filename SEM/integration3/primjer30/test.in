@@ -127,7 +127,7 @@
                       <unarni_izraz>
                        <postfiks_izraz>
                         <primarni_izraz>
-                         ZNAK 2 'h'
+                         ZNAK 2 '\0'
           D_VIT_ZAGRADA 2 }
        TOCKAZAREZ 2 ;
      <deklaracija>

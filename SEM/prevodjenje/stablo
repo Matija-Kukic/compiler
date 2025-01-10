@@ -33,9 +33,13 @@
                   <multiplikativni_izraz>
                    <cast_izraz>
                     <unarni_izraz>
-                     <postfiks_izraz>
-                      <primarni_izraz>
-                       BROJ 2 0xDD
+                     <unarni_operator>
+                      MINUS 2 -
+                     <cast_izraz>
+                      <unarni_izraz>
+                       <postfiks_izraz>
+                        <primarni_izraz>
+                         BROJ 2 020000000123
       TOCKAZAREZ 2 ;
     <lista_naredbi>
      <naredba>

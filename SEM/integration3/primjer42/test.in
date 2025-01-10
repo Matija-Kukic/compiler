@@ -14,14 +14,11 @@
      <deklaracija>
       <ime_tipa>
        <specifikator_tipa>
-        KR_CHAR 2 char
+        KR_INT 2 int
       <lista_init_deklaratora>
        <init_deklarator>
         <izravni_deklarator>
-         IDN 2 c
-         L_UGL_ZAGRADA 2 [
-         BROJ 2 10
-         D_UGL_ZAGRADA 2 ]
+         IDN 2 a
         OP_PRIDRUZI 2 =
         <inicijalizator>
          <izraz_pridruzivanja>
@@ -36,9 +33,13 @@
                   <multiplikativni_izraz>
                    <cast_izraz>
                     <unarni_izraz>
-                     <postfiks_izraz>
-                      <primarni_izraz>
-                       NIZ_ZNAKOVA 2 ""
+                     <unarni_operator>
+                      MINUS 2 -
+                     <cast_izraz>
+                      <unarni_izraz>
+                       <postfiks_izraz>
+                        <primarni_izraz>
+                         BROJ 2 020000000000
       TOCKAZAREZ 2 ;
     <lista_naredbi>
      <naredba>

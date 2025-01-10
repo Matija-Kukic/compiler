@@ -229,12 +229,12 @@ Type PRIMARNI_IZRAZ(const shared_ptr<Tree> &node) {
         }
     } else if (v[0] == "BROJ") {
         try {
-            long long vr = stoll(v[2]);
+            long long vr = stoll(v[2], nullptr, 0);
         } catch (const out_of_range &e) {
             prodErr(node);
         }
         shared_ptr<Tree> ptr = node;
-        long long vr = stoll(v[2]);
+        long long vr = stoll(v[2], nullptr, 0);
         while (ptr != nullptr && ptr->node != "<multiplikativni_izraz>")
             ptr = ptr->parent;
         if (findNode(ptr, "MINUS")) {
