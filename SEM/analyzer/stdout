@@ -1,1 +1,1 @@
-<primarni_izraz> ::= BROJ(2,2147483648)
+<init_deklarator> ::= <izravni_deklarator> OP_PRIDRUZI(2,=) <inicijalizator>

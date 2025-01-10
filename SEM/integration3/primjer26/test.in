@@ -11,46 +11,15 @@
    <slozena_naredba>
     L_VIT_ZAGRADA 1 {
     <lista_deklaracija>
-     <lista_deklaracija>
-      <deklaracija>
-       <ime_tipa>
-        <specifikator_tipa>
-         KR_INT 2 int
-       <lista_init_deklaratora>
-        <init_deklarator>
-         <izravni_deklarator>
-          IDN 2 a
-         OP_PRIDRUZI 2 =
-         <inicijalizator>
-          <izraz_pridruzivanja>
-           <log_ili_izraz>
-            <log_i_izraz>
-             <bin_ili_izraz>
-              <bin_xili_izraz>
-               <bin_i_izraz>
-                <jednakosni_izraz>
-                 <odnosni_izraz>
-                  <aditivni_izraz>
-                   <multiplikativni_izraz>
-                    <cast_izraz>
-                     <unarni_izraz>
-                      <unarni_operator>
-                       MINUS 2 -
-                      <cast_izraz>
-                       <unarni_izraz>
-                        <postfiks_izraz>
-                         <primarni_izraz>
-                          BROJ 2 2147483648
-       TOCKAZAREZ 2 ;
      <deklaracija>
       <ime_tipa>
        <specifikator_tipa>
-        KR_INT 3 int
+        KR_INT 2 int
       <lista_init_deklaratora>
        <init_deklarator>
         <izravni_deklarator>
-         IDN 3 b
-        OP_PRIDRUZI 3 =
+         IDN 2 b
+        OP_PRIDRUZI 2 =
         <inicijalizator>
          <izraz_pridruzivanja>
           <log_ili_izraz>
@@ -65,14 +34,36 @@
                    <cast_izraz>
                     <unarni_izraz>
                      <unarni_operator>
-                      MINUS 3 -
+                      MINUS 2 -
                      <cast_izraz>
                       <unarni_izraz>
                        <postfiks_izraz>
                         <primarni_izraz>
-                         IDN 3 a
-      TOCKAZAREZ 3 ;
+                         BROJ 2 2147483648
+      TOCKAZAREZ 2 ;
     <lista_naredbi>
+     <lista_naredbi>
+      <naredba>
+       <izraz_naredba>
+        <izraz>
+         <izraz_pridruzivanja>
+          <log_ili_izraz>
+           <log_i_izraz>
+            <bin_ili_izraz>
+             <bin_xili_izraz>
+              <bin_i_izraz>
+               <jednakosni_izraz>
+                <odnosni_izraz>
+                 <aditivni_izraz>
+                  <multiplikativni_izraz>
+                   <cast_izraz>
+                    <unarni_izraz>
+                     <postfiks_izraz>
+                      <postfiks_izraz>
+                       <primarni_izraz>
+                        IDN 3 b
+                      OP_DEC 3 --
+        TOCKAZAREZ 3 ;
      <naredba>
       <naredba_skoka>
        KR_RETURN 4 return

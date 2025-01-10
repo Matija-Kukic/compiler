@@ -93,20 +93,20 @@ void printTree(const shared_ptr<Tree> &node, int depth) {
         printTree(child, depth + 1);
     }
 }
-bool checkStrArr(const shared_ptr<Tree> &node) {
+bool findNode(const shared_ptr<Tree> &node, string s) {
     bool z = 0;
     cerr << "BLA BLA CHECK STRARR" << endl;
     const vector<shared_ptr<Tree>> &u = node->children;
     if (u.size() > 0) {
         for (int i = 0; i < u.size(); i++) {
-            if (checkStrArr(u[i])) {
+            if (findNode(u[i], s)) {
                 z = 1;
             }
         }
     }
     vector<string> ulaz = splitSpaces(node->node);
     cerr << "CHECK STRARR DEBUG " << ulaz[0] << endl;
-    if (ulaz[0] == "NIZ_ZNAKOVA") {
+    if (ulaz[0] == s) {
         return true;
     }
     return z;
@@ -229,9 +229,21 @@ Type PRIMARNI_IZRAZ(const shared_ptr<Tree> &node) {
         }
     } else if (v[0] == "BROJ") {
         try {
-            int vr = stoi(v[2]);
+            long long vr = stoll(v[2]);
         } catch (const out_of_range &e) {
             prodErr(node);
+        }
+        shared_ptr<Tree> ptr = node;
+        long long vr = stoll(v[2]);
+        while (ptr != nullptr && ptr->node != "<multiplikativni_izraz>")
+            ptr = ptr->parent;
+        if (findNode(ptr, "MINUS")) {
+            if (vr > 2147483648)
+                prodErr(node);
+        } else {
+            if (vr > 2147483647) {
+                prodErr(node);
+            }
         }
         return Type(Int, false);
     } else if (v[0] == "ZNAK") {
@@ -1613,7 +1625,7 @@ Inistruct INICIJALIZATOR(const shared_ptr<Tree> &node) {
     string ulaz = u[curr]->node;
     if (ulaz == "<izraz_pridruzivanja>") {
         Type t = IZRAZ_PRIDRUZIVANJA(u[curr]);
-        if (checkStrArr(u[curr])) {
+        if (findNode(u[curr], "NIZ_ZNAKOVA")) {
             vector<type> list;
             for (int i = 0; i < t.numElem + 1; i++)
                 list.push_back(Char);
