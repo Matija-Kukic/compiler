@@ -63,7 +63,12 @@ struct treeNode { // tree for scopes
     shared_ptr<treeNode> parent;
     vector<shared_ptr<treeNode>> children;
     map<string, Type> table;
+    unordered_map<string, int> offsets; // for function params
+    unordered_map<string, int> loc_off; // for local variables
     string IDN;
+    int last_off = 0;
+    int loc_last_off = 0;
+    int all_push = 0;
     //~treeNode() { cerr << "treeNODE destroyed" << endl; }
 };
 struct Tree { // tree for inputs

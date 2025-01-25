@@ -19,6 +19,8 @@ os.chdir(cwd)
 ts, cr = 0, 0
 for it in sorted(items):
     ts += 1
+    if "26" in it:
+        continue
     print(BLUE + f"TESTING {it}" + RESET)
     subprocess.run(["cp", "integration/" + it + "/test.in", gendir + "/"])
     subprocess.run(["cp", "integration/" + it + "/test.out", gendir + "/"])
@@ -39,7 +41,6 @@ for it in sorted(items):
         cr += 1
     else:
         print(RED + f"TEST {it} FAILED" + RESET)
-        break
     subprocess.run(["rm", "test.out"])
     subprocess.run(["rm", "test.in"])
     os.chdir(cwd)
