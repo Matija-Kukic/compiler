@@ -5,7 +5,6 @@
 f_main
    LOAD R0, (C_0)
    PUSH R0
-   SUB R7, 4, R7
    LOAD R0, (C_0)
    PUSH R0
    POP R0
@@ -46,3 +45,4 @@ open_0
 C_2    DW %D 2
 C_1    DW %D 42
 C_0    DW %D 0
+   `ORG 1000

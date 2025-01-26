@@ -1,9 +1,8 @@
-int n = 5;
+void f(int a[]) {
+    a[3] = 123;
+}
 int main(void) {
-    if (n == 0) {
-        return 0;
-    } else {
-        n = n - 1;
-        return 1 + main();
-    }
+    int a[5];
+    f(a);
+    return a[3];
 }
