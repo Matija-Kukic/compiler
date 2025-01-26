@@ -1111,9 +1111,11 @@ Type IZRAZ_PRIDRUZIVANJA(const shared_ptr<Tree> &node) {
 
                 map<string, Type> &m = ptr->table;
                 if (m[av].numElem == -1) {
-                    currScope->loc_off[av] = currScope->all_push;
-                    currScope->all_push++;
-                } else {
+                    // currScope->loc_off[av] = currScope->all_push + 1;
+                    //  currScope->all_push++;
+                    file << "   POP R0" << endl;
+                    file << "   STORE R0, (g_" << av << ")" << endl;
+                    currScope->all_push--;
                 }
             }
             return Type(t.type, false);
