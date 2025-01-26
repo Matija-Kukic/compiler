@@ -41,6 +41,7 @@ for it in sorted(items):
         cr += 1
     else:
         print(RED + f"TEST {it} FAILED" + RESET)
+        # break
     subprocess.run(["rm", "test.out"])
     subprocess.run(["rm", "test.in"])
     os.chdir(cwd)

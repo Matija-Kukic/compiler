@@ -244,7 +244,6 @@ void errPrint(string message) {
 }
 
 Type PRIMARNI_IZRAZ(const shared_ptr<Tree> &node) {
-    cerr << "U PRIMARNI IZRAZ" << endl;
     const vector<shared_ptr<Tree>> &u = node->children;
     int curr = 0;
     string ulaz = u[curr]->node;
@@ -273,19 +272,18 @@ Type PRIMARNI_IZRAZ(const shared_ptr<Tree> &node) {
         } else if (ptr != root && ptr != nullptr && t.numElem == -1) {
             const unordered_map<string, int> &m = ptr->offsets;
             const unordered_map<string, int> &m2 = ptr->loc_off;
-            int llo = currScope->loc_last_off;
-            int diff = currScope->all_push - llo;
+            // int llo = currScope->loc_last_off;
+            // int diff = currScope->all_push - llo;
             if (m.find(name) != m.end()) {
-                int val = 4 * (ptr->last_off - m.at(name) +
-                               currScope->loc_last_off + diff);
-                // int val = 4 * (ptr->all_push - m.at(name));
+                // int val = 4 * (ptr->last_off - m.at(name) +
+                //                currScope->loc_last_off + diff);
+                int val = 4 * (currScope->all_push - m.at(name));
                 file << "   LOAD R0, (R7+" << 0 << hex << val << dec << ")"
                      << endl;
                 file << "   PUSH R0" << endl;
                 currScope->all_push++;
             } else if (m2.find(name) != m2.end()) {
-                int val =
-                    (4 * (currScope->loc_last_off - 1 - m2.at(name) + diff));
+                int val = 4 * (currScope->all_push - m2.at(name));
                 file << "   LOAD R0, (R7+" << 0 << hex << val << dec << ")"
                      << endl;
                 file << "   PUSH R0" << endl;
@@ -510,6 +508,8 @@ Type POSTFIKS_IZRAZ(const shared_ptr<Tree> &node) {
                     file << "   CALL f_" + toCall << endl;
                     file << "   ADD R7, " << 0 << hex << t.fparam.size() * 4
                          << dec << ", R7" << endl;
+
+                    currScope->all_push -= t.fparam.size();
                     file << "   PUSH R6" << endl;
                     currScope->all_push++;
                     toCall = "";
@@ -855,6 +855,26 @@ Type JEDNAKOSNI_IZRAZ(const shared_ptr<Tree> &node) {
             Type t2 = ODNOSNI_IZRAZ(u[curr]);
             if (!checkImp(t2.type, Int))
                 prodErr(node);
+            file << "   POP R1" << endl;
+            file << "   POP R0" << endl;
+            file << "   CMP R0, R1" << endl;
+            // file << JP_opertator ;
+            if (v[0] == "OP_EQ") {
+                file << "   JP_EQ opt_" << ops << endl;
+                file << "   JP_NE opf_" << ops << endl;
+            } else {
+                file << "   JP_NE opt_" << ops << endl;
+                file << "   JP_EQ opf_" << ops << endl;
+            }
+            file << "opt_" << ops << endl;
+            file << "   MOVE 1, R1" << endl;
+            file << "   JP open_" << ops << endl;
+            file << "opf_" << ops << endl;
+            file << "   MOVE 0, R1" << endl;
+            file << "open_" << ops << endl;
+            file << "   PUSH R1" << endl;
+            currScope->all_push--;
+
             return Type(Int, false);
         } else {
             errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA JEDNAKOSNI_IZRAZ 2");
@@ -1070,19 +1090,18 @@ Type IZRAZ_PRIDRUZIVANJA(const shared_ptr<Tree> &node) {
             if (ptr != root) {
                 const unordered_map<string, int> &m = ptr->offsets;
                 const unordered_map<string, int> &m2 = ptr->loc_off;
-                int llo = currScope->loc_last_off;
-                int diff = (currScope->all_push - 1) - llo;
+                // int llo = currScope->loc_last_off;
+                // int diff = (currScope->all_push - 1) - llo;
                 if (m.find(av) != m.end()) {
-                    int val = 4 * (ptr->last_off - m.at(av) +
-                                   currScope->loc_last_off + diff);
-                    // int val = 4 * (ptr->all_push - m.at(name));
+                    // int val = 4 * (ptr->last_off - m.at(av) +
+                    //                currScope->loc_last_off + diff);
+                    int val = 4 * (ptr->all_push - m.at(av));
                     file << "   POP R0" << endl;
                     file << "   STORE R0, (R7+" << 0 << hex << val << dec << ")"
                          << endl;
                     currScope->all_push--;
                 } else if (m2.find(av) != m2.end()) {
-                    int val =
-                        (4 * (currScope->loc_last_off - 1 - m2.at(av) + diff));
+                    int val = (4 * (currScope->all_push - m2.at(av)));
                     file << "   POP R0" << endl;
                     file << "   STORE R0, (R7+" << 0 << hex << val << dec << ")"
                          << endl;
@@ -1092,8 +1111,8 @@ Type IZRAZ_PRIDRUZIVANJA(const shared_ptr<Tree> &node) {
 
                 map<string, Type> &m = ptr->table;
                 if (m[av].numElem == -1) {
-                    currScope->loc_off[av] = currScope->loc_last_off;
-                    currScope->loc_last_off++;
+                    currScope->loc_off[av] = currScope->all_push;
+                    currScope->all_push++;
                 } else {
                 }
             }
@@ -1160,7 +1179,11 @@ void SLOZENA_NAREDBA(const shared_ptr<Tree> &node, const vector<string> &names,
     newScope->parent = currScope;
     newScope->IDN = IDN;
     newScope->loc_last_off = currScope->loc_last_off;
-    newScope->all_push = currScope->loc_last_off;
+    if (IDN != "") {
+        newScope->all_push = currScope->all_push + 1;
+    } else {
+        newScope->all_push = currScope->all_push;
+    }
     currScope->children.push_back(newScope);
     currScope = newScope;
     if (!names.empty()) {
@@ -1199,7 +1222,6 @@ void SLOZENA_NAREDBA(const shared_ptr<Tree> &node, const vector<string> &names,
     } else {
         errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA SLOZENA_NAREDBA 4");
     }
-    int a = currScope->loc_last_off;
     currScope = currScope->parent;
 }
 void LISTA_NAREDBI(const shared_ptr<Tree> &node) {
@@ -1441,11 +1463,18 @@ void NAREDBA_SKOKA(const shared_ptr<Tree> &node) {
                 prodErr(node);
             }
         }
-        int a = currScope->loc_last_off;
+        int a = 0;
+        shared_ptr<treeNode> ptr2 = currScope;
+        while (ptr2 != root) {
+            a += ptr2->loc_off.size();
+            ptr2 = ptr2->parent;
+        }
         file << "   POP R6" << endl;
         currScope->all_push--;
         file << "   ADD R7, " << hex << 0 << a * 4 << dec << ", R7" << endl;
+        currScope->all_push -= a;
         file << "   RET" << endl;
+        ptr2.reset();
     } else {
         errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA NAREDBA_SKOKA 2");
     }
@@ -1814,8 +1843,8 @@ Type IZRAVNI_DEKLARATOR(const shared_ptr<Tree> &node, type nt) {
         m[name] = Type(nt, true);
         unordered_map<string, int> &m2 = currScope->loc_off;
         if (currScope != root) {
-            m2[name] = currScope->loc_last_off;
-            currScope->loc_last_off++;
+            m2[name] = currScope->all_push + 1;
+            // currScope->all_push++;
         }
         return Type(nt, true);
     } else if (u.size() == 4) {

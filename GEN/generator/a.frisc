@@ -2,16 +2,16 @@
    CALL f_main
    HALT
 
-f_f
-   LOAD R0, (R7+04)
+f_main
+   LOAD R0, (g_n)
    PUSH R0
    LOAD R0, (C_0)
    PUSH R0
    POP R1
    POP R0
    CMP R0, R1
-   JP_SLT opt_0
-   JP_SGE opf_0
+   JP_EQ opt_0
+   JP_NE opf_0
 opt_0
    MOVE 1, R1
    JP open_0
@@ -24,14 +24,14 @@ open_0
    JP_EQ if_0
    JP_NE el_0
 if_0
-   LOAD R0, (R7+04)
+   LOAD R0, (C_0)
    PUSH R0
    POP R6
    ADD R7, 00, R7
    RET
    JP enif_0
 el_0
-   LOAD R0, (R7+04)
+   LOAD R0, (g_n)
    PUSH R0
    LOAD R0, (C_1)
    PUSH R0
@@ -39,37 +39,18 @@ el_0
    POP R0
    SUB R0, R1, R0
    PUSH R0
-   CALL f_f
-   ADD R7, 04, R7
-   PUSH R6
-   LOAD R0, (R7+0c)
+   LOAD R0, (C_1)
    PUSH R0
-   LOAD R0, (C_0)
-   PUSH R0
-   POP R1
-   POP R0
-   SUB R0, R1, R0
-   PUSH R0
-   CALL f_f
-   ADD R7, 04, R7
+   CALL f_main
    PUSH R6
    POP R1
    POP R0
    ADD R0, R1, R0
    PUSH R0
    POP R6
-   ADD R7, 00, R7
+   ADD R7, 04, R7
    RET
 enif_0
-f_main
-   LOAD R0, (C_2)
-   PUSH R0
-   CALL f_f
-   ADD R7, 04, R7
-   PUSH R6
-   POP R6
-   ADD R7, 00, R7
-   RET
-C_2    DW %D 5
+g_n    DW %D 5
 C_1    DW %D 1
-C_0    DW %D 2
+C_0    DW %D 0
