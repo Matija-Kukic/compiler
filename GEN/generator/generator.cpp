@@ -649,7 +649,7 @@ Type UNARNI_IZRAZ(const shared_ptr<Tree> &node) {
         if (ulaz == "<unarni_izraz>") {
             int a = -1 ? 1 : v[0] == "OP_INC";
             string name = findIDN(u[curr], "IDN");
-            cout << "NAME TEST " << name << endl;
+            // cout << "NAME TEST " << name << endl;
             shared_ptr<treeNode> ptr = currScope;
             while (ptr != root && ptr->table.find(name) == ptr->table.end())
                 ptr = ptr->parent;
@@ -675,6 +675,10 @@ Type UNARNI_IZRAZ(const shared_ptr<Tree> &node) {
                 file << "   STORE R0, (R7+" << 0 << hex << val << dec << ")"
                      << endl;
                 // currScope->all_push++;
+            }
+            if (!assign) {
+                file << "   POP R5" << endl;
+                currScope->all_push--;
             }
             ptr.reset();
             Type t = UNARNI_IZRAZ(u[curr]);
@@ -1589,8 +1593,7 @@ void NAREDBA_PETLJE(const shared_ptr<Tree> &node) {
                 errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA NAREDBA_PETLJE 8");
             IZRAZ(u[curr]);
         }
-        file << "   POP R5" << endl;
-        currScope->all_push--;
+
         file << "   JP foru_" << fors << endl;
         curr++;
         ulaz = u[curr]->node;
