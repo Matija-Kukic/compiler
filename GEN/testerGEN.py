@@ -18,16 +18,17 @@ items = os.listdir()
 os.chdir(cwd)
 ts, cr = 0, 0
 for it in sorted(items):
+    if (
+        # "for" in it
+        # "while" in it
+        # "inc" in it
+        # "gcd" in it
+        ".cfg"
+        in it
+        # or "params2" in it
+    ):
+        continue
     ts += 1
-    # if (
-    #    "for" in it
-    #    or "while" in it
-    #    or "inc" in it
-    #    or "gcd" in it
-    #    or ".cfg" in it
-    #    or "params2" in it
-    # ):
-    #    continue
     print(BLUE + f"TESTING {it}" + RESET)
     subprocess.run(["cp", "integration/" + it + "/test.in", gendir + "/"])
     subprocess.run(["cp", "integration/" + it + "/test.out", gendir + "/"])

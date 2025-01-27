@@ -1,6 +1,5 @@
 int main(void) {
-    int a;
-    int x;
-    a = x = 2;
-    return a + x;
+    int a = 1;
+    int b[3] = {1,2,3};      
+    return b[a];
 }
