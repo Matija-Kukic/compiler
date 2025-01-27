@@ -5,9 +5,11 @@
 f_main
    LOAD R0, (C_0)
    PUSH R0
+   LOAD R0, (C_1)
+   PUSH R0
    LOAD R0, (R7+00)
    PUSH R0
-   LOAD R0, (C_1)
+   LOAD R0, (C_0)
    PUSH R0
    POP R1
    POP R0
@@ -21,35 +23,32 @@ opf_0
    MOVE 0, R1
 open_0
    PUSH R1
+   LOAD R0, (R7+08)
+   PUSH R0
    LOAD R0, (C_2)
-   PUSH R0
-   POP R0
-   STORE R0, (R7+04)
-   PUSH R0
-   LOAD R0, (C_0)
    PUSH R0
    POP R1
    POP R0
-   CMP R0, R1
-   JP_SLT opt_0
-   JP_SGE opf_0
-opt_0
-   MOVE 1, R1
-   JP open_0
-opf_0
-   MOVE 0, R1
-open_0
-   PUSH R1
-   LOAD R0, (C_3)
+   ADD R0, R1, R0
    PUSH R0
    POP R0
    STORE R0, (R7+08)
+   LOAD R0, (R7+04)
+   PUSH R0
+   LOAD R0, (C_2)
+   PUSH R0
+   POP R1
+   POP R0
+   SUB R0, R1, R0
+   PUSH R0
+   POP R0
+   STORE R0, (R7+04)
+   LOAD R0, (R7+08)
    PUSH R0
    POP R6
-   ADD R7, 04, R7
+   ADD R7, 08, R7
    RET
 C_2    DW %D 1
-C_1    DW %D 3
-C_3    DW %D 2
-C_0    DW %D 15
+C_1    DW %D 15
+C_0    DW %D 0
    `ORG 1000
