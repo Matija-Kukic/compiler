@@ -28,6 +28,8 @@ int ifs = 0, ops = 0, fors = 0, whls = 0, mods = 0, logi = 0, logl = 0;
 int currIn = 0;
 int assign = 0;
 bool in_idx = false;
+int arr_dec = 0, arr_in = 0;
+int Ref = 1;
 string av = "";
 vector<string> input;
 vector<string> splitSpaces(string ent) {
@@ -303,6 +305,26 @@ Type PRIMARNI_IZRAZ(const shared_ptr<Tree> &node) {
         } else {
             if (assign) {
                 av = name;
+            } else if (Ref) {
+                const unordered_map<string, int> &m = ptr->offsets;
+                const unordered_map<string, int> &m2 = ptr->loc_off;
+                // int llo = currScope->loc_last_off;
+                // int diff = currScope->all_push - llo;
+                if (m.find(name) != m.end()) {
+                    // int val = 4 * (ptr->last_off - m.at(name) +
+                    //                currScope->loc_last_off + diff);
+                    int val = 4 * (currScope->all_push - m.at(name));
+                    file << "   LOAD R0, (R7+" << 0 << hex << val << dec << ")"
+                         << endl;
+                    file << "   PUSH R0" << endl;
+                    currScope->all_push++;
+                } else if (m2.find(name) != m2.end()) {
+                    int val = 4 * (currScope->all_push - m2.at(name));
+                    file << "   LOAD R0, (R7+" << 0 << hex << val << dec << ")"
+                         << endl;
+                    file << "   PUSH R0" << endl;
+                    currScope->all_push++;
+                }
             }
         }
         ptr.reset();
@@ -336,7 +358,6 @@ Type PRIMARNI_IZRAZ(const shared_ptr<Tree> &node) {
             vr *= -1;
         while (ptr2 != nullptr && ptr2->node != "<definicija_funkcije>")
             ptr2 = ptr2->parent;
-
         if (ptr2 == nullptr) {
             if (gind == -1) {
                 global_ints.insert({globals[curr_global], vr});
@@ -345,14 +366,29 @@ Type PRIMARNI_IZRAZ(const shared_ptr<Tree> &node) {
                 gind++;
             }
         } else {
-            if (consts.find(vr) == consts.end()) {
-                string cname = "C_" + to_string(last_const);
-                consts.insert({vr, cname});
-                last_const += 1;
+            if (!arr_dec) {
+                if (consts.find(vr) == consts.end()) {
+                    string cname = "C_" + to_string(last_const);
+                    consts.insert({vr, cname});
+                    last_const += 1;
+                }
+                file << "   LOAD R0, (" << consts[vr] << ")" << endl;
+                file << "   PUSH R0" << endl;
+                currScope->all_push++;
+            } else {
+                if (consts.find(vr) == consts.end()) {
+                    string cname = "C_" + to_string(last_const);
+                    consts.insert({vr, cname});
+                    last_const += 1;
+                }
+                file << "   LOAD R0, (" << consts[vr] << ")" << endl;
+                file << "   LOAD R1,(R7)" << endl;
+                file << "   ADD R1, " << hex << 0 << arr_in * 4 << dec << ", R1"
+                     << endl;
+                file << "   STORE R0,(R1)" << endl;
+                arr_dec--;
+                arr_in++;
             }
-            file << "   LOAD R0, (" << consts[vr] << ")" << endl;
-            file << "   PUSH R0" << endl;
-            currScope->all_push++;
         }
 
         return Type(Int, false);
@@ -419,12 +455,15 @@ Type POSTFIKS_IZRAZ(const shared_ptr<Tree> &node) {
         Type t = PRIMARNI_IZRAZ(u[curr]);
         return t;
     } else if (ulaz == "<postfiks_izraz>") {
-
+        if (findNode(u[curr + 1], "L_UGL_ZAGRADA")) {
+            Ref = 0;
+        }
         Type t = POSTFIKS_IZRAZ(u[curr]);
         curr++;
         ulaz = u[curr]->node;
         vector v = splitSpaces(ulaz);
         if (v[0] == "L_UGL_ZAGRADA") {
+            // Ref = 0;
             shared_ptr<treeNode> ptr = currScope;
             string name = findIDN(u[0], "IDN");
             while (ptr != root) {
@@ -470,38 +509,36 @@ Type POSTFIKS_IZRAZ(const shared_ptr<Tree> &node) {
                                         ptr->loc_off;
 
                                     if (m.find(name) != m.end()) {
-                                        // currScope->all_push--;
-                                        int val =
-                                            4 * (ptr->all_push - m.at(name));
+                                        currScope->all_push--;
+                                        int val = 4 * (currScope->all_push -
+                                                       m.at(name));
                                         file << "   POP R1" << endl;
                                         file << "   SHL R1, 2, R1" << endl;
-                                        file << "   MOVE " << hex << val
-                                             << ", R2"
-
-                                             << endl;
+                                        file << "   LOAD R2,(R7+" << hex << 0
+                                             << val << ")" << endl;
                                         file << "   ADD R2, R1, R2" << endl;
-                                        file << "   ADD R2, R7, R2" << endl;
                                         file << "   LOAD R0,(R2)" << endl;
-                                        file << "   PUSH R0,(R2)" << endl;
+                                        file << "   PUSH R0" << endl;
+
+                                        currScope->all_push++;
                                         // currScope->all_push -= 2;
                                     } else if (m2.find(name) != m2.end()) {
-                                        // currScope->all_push--;
+                                        currScope->all_push--;
                                         int val = (4 * (currScope->all_push -
                                                         m2.at(name)));
                                         file << "   POP R1" << endl;
                                         file << "   SHL R1, 2, R1" << endl;
-                                        file << "   MOVE " << hex << val
-                                             << ", R2"
-
-                                             << endl;
+                                        file << "   LOAD R2,(R7+" << hex << 0
+                                             << val << ")" << endl;
                                         file << "   ADD R2, R1, R2" << endl;
-                                        file << "   ADD R2, R7, R2" << endl;
                                         file << "   LOAD R0,(R2)" << endl;
                                         file << "   PUSH R0" << endl;
+                                        currScope->all_push++;
                                         // currScope->all_push -= 2;
                                     }
                                 }
                             }
+                            Ref = 1;
                             ptr.reset();
                             if (t.type == arrint) {
                                 return Type(Int, true);
@@ -564,20 +601,15 @@ Type POSTFIKS_IZRAZ(const shared_ptr<Tree> &node) {
                 }
                 if (t.type == Func) {
                     file << "   CALL f_" + toCall << endl;
-                    int vr = 0;
-                    for (int i = 0; i < t.fparam.size(); i++) {
-                        if (t.fparam[i] == Int || t.fparam[i] == Char ||
-                            t.fparam[i] == kint || t.fparam[i] == kchar)
-                            vr++;
-                    }
-                    file << "   ADD R7, " << 0 << hex << vr * 4 << dec << ", R7"
-                         << endl;
+
+                    file << "   ADD R7, " << 0 << hex << t.fparam.size() * 4
+                         << dec << ", R7" << endl;
 
                     currScope->all_push -= t.fparam.size();
                     if (t.retyp != Void) {
                         file << "   PUSH R6" << endl;
+                        currScope->all_push++;
                     }
-                    currScope->all_push++;
                     toCall = "";
                 }
                 if (z == params.size()) {
@@ -1322,32 +1354,28 @@ Type IZRAZ_PRIDRUZIVANJA(const shared_ptr<Tree> &node) {
                     if (m.find(av) != m.end()) {
                         // int val = 4 * (ptr->last_off - m.at(av) +
                         //                currScope->loc_last_off + diff);
-                        currScope->all_push--;
+                        currScope->all_push -= 2;
                         int val = 4 * (ptr->all_push - m.at(av));
                         file << "   POP R0" << endl;
                         file << "   POP R1" << endl;
                         file << "   SHL R1, 2, R1" << endl;
-                        file << "   MOVE " << hex << val << ", R2"
+                        file << "   LOAD R2,(R7+" << hex << val << ")"
 
                              << endl;
                         file << "   ADD R2, R1, R2" << endl;
-                        file << "   ADD R2, R7, R2" << endl;
                         file << "   STORE R0,(R2)" << endl;
-                        currScope->all_push -= 2;
 
                     } else if (m2.find(av) != m2.end()) {
-                        currScope->all_push--;
+                        currScope->all_push -= 2;
                         int val = (4 * (currScope->all_push - m2.at(av)));
                         file << "   POP R0" << endl;
                         file << "   POP R1" << endl;
                         file << "   SHL R1, 2, R1" << endl;
-                        file << "   MOVE " << hex << val << ", R2"
+                        file << "   LOAD R2,(R7+" << hex << val << ")"
 
                              << endl;
                         file << "   ADD R2, R1, R2" << endl;
-                        file << "   ADD R2, R7, R2" << endl;
                         file << "   STORE R0,(R2)" << endl;
-                        currScope->all_push -= 2;
                     }
                 }
             } else {
@@ -1455,20 +1483,8 @@ void SLOZENA_NAREDBA(const shared_ptr<Tree> &node, const vector<string> &names,
         int sp = currScope->all_push - 1;
         for (int i = names.size() - 1; i >= 0; --i) {
             type t = types[i];
-            if (t == Int || t == Char || t == kint || t == kchar) {
-                currScope->offsets[names[i]] = sp;
-                sp -= 1;
-            } else {
-                shared_ptr<treeNode> ptr = currScope;
-                while (ptr != root) {
-                    const unordered_map<string, int> &m = ptr->loc_off;
-                    if (m.find(names[i]) == m.end()) {
-                        break;
-                    }
-                }
-                if (ptr != root)
-                    currScope->loc_off[names[i]] = ptr->loc_off[names[i]];
-            }
+            currScope->offsets[names[i]] = sp;
+            sp -= 1;
         }
     }
     if (v[0] == "L_VIT_ZAGRADA") {
@@ -1773,22 +1789,14 @@ void NAREDBA_SKOKA(const shared_ptr<Tree> &node) {
                 prodErr(node);
             }
         }
-        int a = 0;
         shared_ptr<treeNode> ptr2 = currScope;
-        while (ptr2 != root) {
-            const unordered_map<string, int> &m = ptr2->loc_off;
-            for (const auto &e : m) {
-                Type t = ptr2->table[e.first];
-                if (t.numElem == -1) {
-                    a += 1;
-                } else {
-                    a += t.numElem;
-                }
-            }
-            ptr2 = ptr2->parent;
-        }
         file << "   POP R6" << endl;
         currScope->all_push--;
+        int a = 0;
+        while (ptr2 != root) {
+            a += ptr2->loc_off.size();
+            ptr2 = ptr2->parent;
+        }
         file << "   ADD R7, " << hex << 0 << a * 4 << dec << ", R7" << endl;
         currScope->all_push -= a;
         file << "   RET" << endl;
@@ -2201,10 +2209,18 @@ Type IZRAVNI_DEKLARATOR(const shared_ptr<Tree> &node, type nt) {
                 last_global += val;
                 gind = 0;
             } else {
-                file << "   SUB R7, " << hex << 0 << val * 4 << dec << ", R7"
+                file << "   MOVE " << hex << 0 << 4096 + last_global << " ,R0"
                      << endl;
-                currScope->all_push += val;
-                currScope->loc_off[name] = currScope->all_push;
+                ;
+                file << "   PUSH R0" << endl;
+                currScope->all_push++;
+                unordered_map<string, int> &m2 = currScope->loc_off;
+                m2[name] = currScope->all_push;
+                last_global += val;
+                if (node->parent->children.size() > 1) {
+                    arr_dec += val;
+                    arr_in = 0;
+                }
             }
             return m[name];
         } else if (v[0] == "KR_VOID") {
