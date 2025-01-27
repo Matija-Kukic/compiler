@@ -26,7 +26,7 @@ unordered_map<int, string> consts;
 int last_const = 0;
 int ifs = 0, ops = 0;
 int currIn = 0;
-bool assign = false;
+int assign = 0;
 bool in_idx = false;
 string av = "";
 vector<string> input;
@@ -265,12 +265,15 @@ Type PRIMARNI_IZRAZ(const shared_ptr<Tree> &node) {
                 ptr = ptr->parent;
             }
         }
-        if (t.numElem == -1) {
+        if (t.type == Int || t.type == kchar || t.type == Char ||
+            t.type == kint || t.type == Func) {
             if (t.type == Func) {
                 toCall = name;
             } else if (assign) {
+                // cout << "TU SAM NIGA I SMANJUJEM " << endl;
                 av = name;
-                assign = false;
+                assign--;
+
             } else if (ptr != root && ptr != nullptr) {
                 const unordered_map<string, int> &m = ptr->offsets;
                 const unordered_map<string, int> &m2 = ptr->loc_off;
@@ -459,6 +462,47 @@ Type POSTFIKS_IZRAZ(const shared_ptr<Tree> &node) {
                                     file << "   LOAD R0,(R1)" << endl;
                                     file << "   PUSH R0" << endl;
                                     // currScope->all_push++;
+                                } else {
+
+                                    cout << "BLA " << assign << endl;
+                                    const unordered_map<string, int> &m =
+                                        ptr->offsets;
+                                    const unordered_map<string, int> &m2 =
+                                        ptr->loc_off;
+
+                                    if (m.find(name) != m.end()) {
+                                        cout << "BLA2 " << assign << endl;
+                                        // currScope->all_push--;
+                                        int val =
+                                            4 * (ptr->all_push - m.at(name));
+                                        file << "   POP R1" << endl;
+                                        file << "   SHL R1, 2, R1" << endl;
+                                        file << "   MOVE " << hex << val
+                                             << ", R2"
+
+                                             << endl;
+                                        file << "   ADD R2, R1, R2" << endl;
+                                        file << "   ADD R2, R7, R2" << endl;
+                                        file << "   LOAD R0,(R2)" << endl;
+                                        file << "   PUSH R0,(R2)" << endl;
+                                        // currScope->all_push -= 2;
+                                    } else if (m2.find(name) != m2.end()) {
+                                        cout << "BLA3 " << assign << endl;
+                                        // currScope->all_push--;
+                                        int val = (4 * (currScope->all_push -
+                                                        m2.at(name)));
+                                        file << "   POP R1" << endl;
+                                        file << "   SHL R1, 2, R1" << endl;
+                                        file << "   MOVE " << hex << val
+                                             << ", R2"
+
+                                             << endl;
+                                        file << "   ADD R2, R1, R2" << endl;
+                                        file << "   ADD R2, R7, R2" << endl;
+                                        file << "   LOAD R0,(R2)" << endl;
+                                        file << "   PUSH R0" << endl;
+                                        // currScope->all_push -= 2;
+                                    }
                                 }
                             }
                             ptr.reset();
@@ -495,7 +539,9 @@ Type POSTFIKS_IZRAZ(const shared_ptr<Tree> &node) {
             if (v2[0] == "D_ZAGRADA") {
                 if (t.type == Func) {
                     file << "   CALL f_" + toCall << endl;
-                    file << "   PUSH R6" << endl;
+                    if (t.retyp != Void) {
+                        file << "   PUSH R6" << endl;
+                    }
                     currScope->all_push++;
                     toCall = "";
                 }
@@ -521,11 +567,19 @@ Type POSTFIKS_IZRAZ(const shared_ptr<Tree> &node) {
                 }
                 if (t.type == Func) {
                     file << "   CALL f_" + toCall << endl;
-                    file << "   ADD R7, " << 0 << hex << t.fparam.size() * 4
-                         << dec << ", R7" << endl;
+                    int vr = 0;
+                    for (int i = 0; i < t.fparam.size(); i++) {
+                        if (t.fparam[i] == Int || t.fparam[i] == Char ||
+                            t.fparam[i] == kint || t.fparam[i] == kchar)
+                            vr++;
+                    }
+                    file << "   ADD R7, " << 0 << hex << vr * 4 << dec << ", R7"
+                         << endl;
 
                     currScope->all_push -= t.fparam.size();
-                    file << "   PUSH R6" << endl;
+                    if (t.retyp != Void) {
+                        file << "   PUSH R6" << endl;
+                    }
                     currScope->all_push++;
                     toCall = "";
                 }
@@ -1077,7 +1131,8 @@ Type IZRAZ_PRIDRUZIVANJA(const shared_ptr<Tree> &node) {
     if (ulaz == "<log_ili_izraz>") {
         return LOG_ILI_IZRAZ(u[curr]);
     } else if (ulaz == "<postfiks_izraz>") {
-        assign = true;
+        assign += 1;
+        string last_av = av;
         Type t = POSTFIKS_IZRAZ(u[curr]);
         if (t.lexp != 1)
             prodErr(node);
@@ -1103,28 +1158,75 @@ Type IZRAZ_PRIDRUZIVANJA(const shared_ptr<Tree> &node) {
                 ptr = ptr->parent;
             }
             if (ptr != root) {
+                map<string, Type> &m3 = ptr->table;
+                Type t = m3[av];
                 const unordered_map<string, int> &m = ptr->offsets;
                 const unordered_map<string, int> &m2 = ptr->loc_off;
-                // int llo = currScope->loc_last_off;
-                // int diff = (currScope->all_push - 1) - llo;
-                if (m.find(av) != m.end()) {
-                    // int val = 4 * (ptr->last_off - m.at(av) +
-                    //                currScope->loc_last_off + diff);
-                    int val = 4 * (ptr->all_push - m.at(av));
-                    file << "   POP R0" << endl;
-                    file << "   STORE R0, (R7+" << 0 << hex << val << dec << ")"
-                         << endl;
-                    currScope->all_push--;
-                } else if (m2.find(av) != m2.end()) {
-                    int val = (4 * (currScope->all_push - m2.at(av)));
-                    file << "   POP R0" << endl;
-                    file << "   STORE R0, (R7+" << 0 << hex << val << dec << ")"
-                         << endl;
-                    currScope->all_push--;
+                if (t.type == Int || t.type == kchar || t.type == Char ||
+                    t.type == kint) {
+                    // int llo = currScope->loc_last_off;
+                    // int diff = (currScope->all_push - 1) - llo;
+                    if (m.find(av) != m.end()) {
+                        // int val = 4 * (ptr->last_off - m.at(av) +
+                        //                currScope->loc_last_off + diff);
+                        currScope->all_push--;
+                        int val = 4 * (ptr->all_push - m.at(av));
+                        file << "   POP R0" << endl;
+                        file << "   STORE R0, (R7+" << 0 << hex << val << dec
+                             << ")" << endl;
+                        if (assign - 1) {
+                            file << "   PUSH R0" << endl;
+                            currScope->all_push++;
+                        }
+                    } else if (m2.find(av) != m2.end()) {
+                        currScope->all_push--;
+                        int val = (4 * (currScope->all_push - m2.at(av)));
+                        file << "   POP R0" << endl;
+                        file << "   STORE R0, (R7+" << 0 << hex << val << dec
+                             << ")" << endl;
+                        if (assign - 1) {
+                            file << "   PUSH R0" << endl;
+                            currScope->all_push++;
+                        }
+                        cout << "AP: " << currScope->all_push << endl;
+                    }
+                } else {
+                    if (m.find(av) != m.end()) {
+                        // int val = 4 * (ptr->last_off - m.at(av) +
+                        //                currScope->loc_last_off + diff);
+                        currScope->all_push--;
+                        int val = 4 * (ptr->all_push - m.at(av));
+                        file << "   POP R0" << endl;
+                        file << "   POP R1" << endl;
+                        file << "   SHL R1, 2, R1" << endl;
+                        file << "   MOVE " << hex << val << ", R2"
+
+                             << endl;
+                        file << "   ADD R2, R1, R2" << endl;
+                        file << "   ADD R2, R7, R2" << endl;
+                        file << "   STORE R0,(R2)" << endl;
+                        currScope->all_push -= 2;
+
+                    } else if (m2.find(av) != m2.end()) {
+                        currScope->all_push--;
+                        int val = (4 * (currScope->all_push - m2.at(av)));
+                        file << "   POP R0" << endl;
+                        file << "   POP R1" << endl;
+                        file << "   SHL R1, 2, R1" << endl;
+                        file << "   MOVE " << hex << val << ", R2"
+
+                             << endl;
+                        file << "   ADD R2, R1, R2" << endl;
+                        file << "   ADD R2, R7, R2" << endl;
+                        file << "   STORE R0,(R2)" << endl;
+                        currScope->all_push -= 2;
+                    }
                 }
             } else {
                 map<string, Type> &m = ptr->table;
-                if (m[av].numElem == -1) {
+                Type t = m[av];
+                if (t.type == Int || t.type == kchar || t.type == Char ||
+                    t.type == kint) {
                     // currScope->loc_off[av] = currScope->all_push + 1;
                     //  currScope->all_push++;
                     file << "   POP R0" << endl;
@@ -1144,7 +1246,8 @@ Type IZRAZ_PRIDRUZIVANJA(const shared_ptr<Tree> &node) {
                     currScope->all_push -= 2;
                 }
             }
-            assign = false;
+            av = last_av;
+            assign--;
             return Type(t.type, false);
         } else {
             errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA  IZRAZ_PRIDRUZIVANJA 2");
@@ -1218,8 +1321,24 @@ void SLOZENA_NAREDBA(const shared_ptr<Tree> &node, const vector<string> &names,
     if (!names.empty()) {
         for (int i = 0; i < names.size(); i++) {
             currScope->table[names[i]] = Type(types[i], true);
-            currScope->offsets[names[i]] = currScope->last_off;
-            currScope->last_off += 1;
+        }
+        int sp = currScope->all_push - 1;
+        for (int i = names.size() - 1; i >= 0; --i) {
+            type t = types[i];
+            if (t == Int || t == Char || t == kint || t == kchar) {
+                currScope->offsets[names[i]] = sp;
+                sp -= 1;
+            } else {
+                shared_ptr<treeNode> ptr = currScope;
+                while (ptr != root) {
+                    const unordered_map<string, int> &m = ptr->loc_off;
+                    if (m.find(names[i]) == m.end()) {
+                        break;
+                    }
+                }
+                if (ptr != root)
+                    currScope->loc_off[names[i]] = ptr->loc_off[names[i]];
+            }
         }
     }
     if (v[0] == "L_VIT_ZAGRADA") {
@@ -1252,6 +1371,9 @@ void SLOZENA_NAREDBA(const shared_ptr<Tree> &node, const vector<string> &names,
         errPrint("KRIVI ULAZNI ZNAKOVI GRAMATIKA SLOZENA_NAREDBA 4");
     }
     currScope = currScope->parent;
+    if (currScope->table[IDN].retyp == Void) {
+        file << "   RET" << endl;
+    }
 }
 void LISTA_NAREDBI(const shared_ptr<Tree> &node) {
     cerr << "U LISTA NAREDBI" << endl;
@@ -1495,7 +1617,15 @@ void NAREDBA_SKOKA(const shared_ptr<Tree> &node) {
         int a = 0;
         shared_ptr<treeNode> ptr2 = currScope;
         while (ptr2 != root) {
-            a += ptr2->loc_off.size();
+            const unordered_map<string, int> &m = ptr2->loc_off;
+            for (const auto &e : m) {
+                Type t = ptr2->table[e.first];
+                if (t.numElem == -1) {
+                    a += 1;
+                } else {
+                    a += t.numElem;
+                }
+            }
             ptr2 = ptr2->parent;
         }
         file << "   POP R6" << endl;
@@ -1873,8 +2003,13 @@ Type IZRAVNI_DEKLARATOR(const shared_ptr<Tree> &node, type nt) {
         m[name] = Type(nt, true);
         unordered_map<string, int> &m2 = currScope->loc_off;
         if (currScope != root) {
-            m2[name] = currScope->all_push + 1;
-            // currScope->all_push++;
+            if (node->parent->children.size() < 3) {
+                file << "   SUB R7,4,R7" << endl;
+                m2[name] = currScope->all_push + 1;
+                currScope->all_push++;
+            } else {
+                m2[name] = currScope->all_push + 1;
+            }
         }
         return Type(nt, true);
     } else if (u.size() == 4) {
@@ -1906,6 +2041,11 @@ Type IZRAVNI_DEKLARATOR(const shared_ptr<Tree> &node, type nt) {
                 globals.insert({name, last_global});
                 last_global += val;
                 gind = 0;
+            } else {
+                file << "    SUB R7, " << hex << 0 << val * 4 << dec << ", R7"
+                     << endl;
+                currScope->all_push += val;
+                currScope->loc_off[name] = currScope->all_push;
             }
             return m[name];
         } else if (v[0] == "KR_VOID") {

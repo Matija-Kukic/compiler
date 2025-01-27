@@ -1,8 +1,6 @@
-int f (int n) {
-    return n+x;
-}
-int x = 12;
-int y = 13;
 int main(void) {
-    return f(1)+y;
+    int a;
+    int x;
+    a = x = 2;
+    return a + x;
 }
